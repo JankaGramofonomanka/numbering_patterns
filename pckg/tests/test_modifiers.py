@@ -1,6 +1,5 @@
 import unittest
-import linear_formula as lf
-from linear_formula import LinearFormula
+from pckg.source.linear_formula import LinearFormula
 
 class TestModifiers(unittest.TestCase):
 

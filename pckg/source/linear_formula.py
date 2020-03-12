@@ -1,4 +1,4 @@
-import misc
+from pckg.source import misc
 
 
 class LinearFormula():
