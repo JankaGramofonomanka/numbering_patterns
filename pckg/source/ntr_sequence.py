@@ -22,6 +22,9 @@ class NTermRecursionSequence():
             self.n = args[0].n
             self.formulas = args[0].formulas.copy()
 
+        elif len(args) == 1 and type(args[0]) in {tuple, list}:
+            NTermRecursionSequence.__init__(self, *args[0])
+
         else:
             self.n = len(args)
 
