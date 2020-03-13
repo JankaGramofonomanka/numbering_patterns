@@ -8,6 +8,7 @@ class TestCVNP(unittest.TestCase):
     def test_init(self):
 
         test_data = [
+            # init args
             (4,     ('i', '2i'),    ('2i', 'i'),    3,      3       ),
             ('2n',  ('i', '2i'),    ('2i', 'i'),    '2k',   '2k + 1'),
             (4,     ('i', '2i'),    ('2i', 'i') ),
@@ -41,6 +42,7 @@ class TestCVNP(unittest.TestCase):
     def test_eq(self):
 
         test_data = [
+            # init args
             (4,     ('i', '2i'),    ('2i', 'i'),    3,      3       ),
             ('2n',  ('i', '2i'),    ('2i', 'i'),    '2k',   '2k + 1'),
             (4,     ('i', '2i'),    ('2i', 'i') ),
@@ -53,6 +55,7 @@ class TestCVNP(unittest.TestCase):
             self.assertEqual(pattern_1, pattern_2)
 
         test_data = [
+            # init args
             ((4,    ('i', '2i'),    ('2i', 'i'), 3, 3),
              (4,    ('i', '2i'),    ('2i', 'i') )                       ),
 
@@ -74,6 +77,8 @@ class TestCVNP(unittest.TestCase):
     def test_evaluate(self):
 
         test_data = [
+            # init args/
+            # /(index, value)
             ((4,    ('i', '2i'),    ('2i', 'i'), 3, 3),
              (0, 4),    (-1, 0),    (-2, 0),    (-3, 1),    (-4, 2),
              (1, 0),    (2, 0),     (3, 2),     (4, 1),     (5, 4)          ),
@@ -104,7 +109,9 @@ class TestCVNP(unittest.TestCase):
 
     def test_get_variables(self):
 
+        # don't omit zeros
         test_data = [
+            # init args                             variables in use
             ((4, ('i', '2i'), ('2i', 'i'), 3, 3),   {'i'}           ),
             (('2', ('a + i', '6i'), ('2i', 'i')),   {'a', 'i'}      ),
             ((4, ('i',), ('2b',), 3, 3),            {'i', 'b'}      ),
@@ -118,7 +125,9 @@ class TestCVNP(unittest.TestCase):
             pattern = CentralVertexNumberingPattern(*info[0])
             self.assertEqual(pattern.get_variables(), info[1])
 
+        # omit zeros
         test_data = [
+            # init args                             variables in use
             (('0a', ('b',), ('c',), 'd', 'e'),      {'b', 'c', 'd', 'e'}),
             (('a', ('0b',), ('c',), 'd', 'e'),      {'a', 'c', 'd', 'e'}),
             (('a', ('b',), ('0c',), 'd', 'e'),      {'a', 'b', 'd', 'e'}),
@@ -153,6 +162,8 @@ class TestCVNP(unittest.TestCase):
     def test_zip(self):
 
         test_data = [
+            # init formulas/
+            # /zipped formulas
             (('i+i',    ('i+i', 'i+i'), ('i+i', 'i+i'), 'i+i',  'i+i'   ),
              ('2i',     ('2i', '2i'),   ('2i', '2i'),   '2i',   '2i'    )),
 
@@ -170,6 +181,9 @@ class TestCVNP(unittest.TestCase):
     def test_substitute(self):
 
         test_data = [
+            # {variable: substitute}/
+            # /init formulas/
+            # /formulas after substitution
             ({'a': 'b'},
              ('a', ('a', 'a'), ('a', 'a'), 'a',  'a'),
              ('b', ('b', 'b'), ('b', 'b'), 'b',  'b')),
@@ -193,6 +207,8 @@ class TestCVNP(unittest.TestCase):
     def test_reverse(self):
 
         test_data = [
+            # init formulas/
+            # /reversed
             (('i', ('i', '2i'), ('2i', 'i'), 3,  4),
              ('i', ('2i', 'i'), ('i', '2i'), 4,  3)),
 
