@@ -69,7 +69,7 @@ class CentralVertexNumberingPattern():
         if r_len == 'default':
             try:
                 r_len = self.right_len.evaluate()
-            except  TypeError:
+            except TypeError:
                 raise TypeError('right sequence length is not a number')
 
         string = ''
@@ -90,8 +90,10 @@ class CentralVertexNumberingPattern():
         result = self.center.get_variables(omit_zeros=omit_zeros)
         result |= self.left_seq.get_variables(omit_zeros=omit_zeros)
         result |= self.right_seq.get_variables(omit_zeros=omit_zeros)
-        result |= self.left_len.get_variables(omit_zeros=omit_zeros)
-        result |= self.right_len.get_variables(omit_zeros=omit_zeros)
+        if self.left_len != LinearFormula('inf'):
+            result |= self.left_len.get_variables(omit_zeros=omit_zeros)
+        if self.right_len != LinearFormula('inf'):
+            result |= self.right_len.get_variables(omit_zeros=omit_zeros)
 
         return result
 
@@ -107,6 +109,8 @@ class CentralVertexNumberingPattern():
         self.center.zip(inplace=True)
         self.left_seq.zip(inplace=True)
         self.right_seq.zip(inplace=True)
+        self.left_len.zip(inplace=True)
+        self.right_len.zip(inplace=True)
 
     @misc.inplace(default=False)
     def substitute(self, **kwargs):
@@ -116,6 +120,8 @@ class CentralVertexNumberingPattern():
         self.center.substitute(**kwargs, inplace=True)
         self.left_seq.substitute(**kwargs, inplace=True)
         self.right_seq.substitute(**kwargs, inplace=True)
+        self.left_len.substitute(**kwargs, inplace=True)
+        self.right_len.substitute(**kwargs, inplace=True)
 
     @misc.inplace(default=False)
     def reverse(self):
@@ -124,3 +130,7 @@ class CentralVertexNumberingPattern():
         temp_seq = self.left_seq.copy()
         self.left_seq = self.right_seq.copy()
         self.right_seq = temp_seq
+
+        temp_len = self.left_len.copy()
+        self.left_len = self.right_len.copy()
+        self.right_len = temp_len
