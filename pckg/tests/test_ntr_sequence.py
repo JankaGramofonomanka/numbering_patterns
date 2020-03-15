@@ -25,16 +25,6 @@ class TestNTRSequence(unittest.TestCase):
                 self.assertEqual(LinearFormula(args[i]), seq.formulas[i])
                 self.assertEqual((type(seq.formulas[i])), LinearFormula)
 
-            # init with tuple
-            seq = NTermRecursionSequence(args)
-            n = len(args)
-
-            self.assertEqual(seq.n, n)
-            self.assertEqual(len(seq.formulas), n)
-            for i in range(n):
-                self.assertEqual(LinearFormula(args[i]), seq.formulas[i])
-                self.assertEqual((type(seq.formulas[i])), LinearFormula)
-
             # init with formulas
             new_args = []
             for i in range(n):

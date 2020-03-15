@@ -18,9 +18,16 @@ class CentralVertexNumberingPattern():
         l_len='inf', r_len='inf'):
 
         self.center = LinearFormula(central_number)
-        
-        self.left_seq = NTermRecursionSequence(left_seq)
-        self.right_seq = NTermRecursionSequence(right_seq)
+
+        if type(left_seq) in {list, tuple}:
+            self.left_seq = NTermRecursionSequence(*left_seq)
+        else:
+            self.left_seq = NTermRecursionSequence(left_seq)
+
+        if type(right_seq) in {list, tuple}:
+            self.right_seq = NTermRecursionSequence(*right_seq)
+        else:
+            self.right_seq = NTermRecursionSequence(right_seq)
 
         self.left_len = LinearFormula(l_len)
         self.right_len = LinearFormula(r_len)

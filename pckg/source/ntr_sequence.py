@@ -9,7 +9,7 @@ class NTermRecursionSequence():
     # f1(0), f2(0), f3(0), f1(1), f2(1), f3(1), f1(2), f2(2), f3(2), ...
 
     def __init__(self, *args):
-        """Initializes the formula"""
+        """Initializes the sequence"""
         # args should consist of another instance of <NTermRecursionSequence>
         # or of formulas (values convertible to <LinearFormula>) determining
         # the sequence.
@@ -22,10 +22,6 @@ class NTermRecursionSequence():
         if len(args) == 1 and type(args[0]) == NTermRecursionSequence:
             self.n = args[0].n
             self.formulas = args[0].formulas.copy()
-
-        # init with a tuple/list of formulas
-        elif len(args) == 1 and type(args[0]) in {tuple, list}:
-            NTermRecursionSequence.__init__(self, *args[0])
 
         # init with formulas
         else:
