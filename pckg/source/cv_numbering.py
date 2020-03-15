@@ -2,7 +2,7 @@ from pckg.source.linear_formula import LinearFormula
 from pckg.source.ntr_sequence import NTermRecursionSequence
 from pckg.source import misc
 
-class CentralVertexNumberingPattern():
+class CentralVertexNumbering():
     """A class to represent a numbering pattern of a cycle determined by a
     central vertex number, left-hand and right-hand sequences"""
     # for example if the central number is c,
@@ -106,7 +106,7 @@ class CentralVertexNumberingPattern():
 
     def copy(self):
         """Returns a copy of <self>"""
-        return CentralVertexNumberingPattern(self.center, self.left_seq,
+        return CentralVertexNumbering(self.center, self.left_seq,
             self.right_seq, self.left_len, self.right_len)
 
     @misc.inplace(default=False)

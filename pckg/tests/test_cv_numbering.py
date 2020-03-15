@@ -1,5 +1,5 @@
 import unittest
-from pckg.source.cv_numbering_pattern import CentralVertexNumberingPattern
+from pckg.source.cv_numbering import CentralVertexNumbering
 from pckg.source.ntr_sequence import NTermRecursionSequence
 from pckg.source.linear_formula import LinearFormula
 
@@ -15,11 +15,11 @@ class TestCVNP(unittest.TestCase):
         ]
 
         for info in test_data:
-            pattern_1 = CentralVertexNumberingPattern(*info)
+            pattern_1 = CentralVertexNumbering(*info)
             args = list(info)
             args[1] = NTermRecursionSequence(*args[1])
             args[2] = NTermRecursionSequence(*args[2])
-            pattern_2 = CentralVertexNumberingPattern(*args)
+            pattern_2 = CentralVertexNumbering(*args)
 
             self.assertEqual(pattern_1.center, LinearFormula(info[0]))
             self.assertEqual(pattern_2.center, LinearFormula(info[0]))
@@ -49,8 +49,8 @@ class TestCVNP(unittest.TestCase):
         ]
 
         for args in test_data:
-            pattern_1 = CentralVertexNumberingPattern(*args)
-            pattern_2 = CentralVertexNumberingPattern(*args)
+            pattern_1 = CentralVertexNumbering(*args)
+            pattern_2 = CentralVertexNumbering(*args)
 
             self.assertEqual(pattern_1, pattern_2)
 
@@ -70,8 +70,8 @@ class TestCVNP(unittest.TestCase):
         ]
 
         for info in test_data:
-            pattern_1 = CentralVertexNumberingPattern(*info[0])
-            pattern_2 = CentralVertexNumberingPattern(*info[1])
+            pattern_1 = CentralVertexNumbering(*info[0])
+            pattern_2 = CentralVertexNumbering(*info[1])
             self.assertNotEqual(pattern_1, pattern_2)
 
     def test_evaluate(self):
@@ -101,7 +101,7 @@ class TestCVNP(unittest.TestCase):
         ]
 
         for info in test_data:
-            pattern = CentralVertexNumberingPattern(*info[0])
+            pattern = CentralVertexNumbering(*info[0])
             for index, value in info[1:]:
                 result = pattern.evaluate(index)
                 expected_result = LinearFormula(value).zip()
@@ -122,7 +122,7 @@ class TestCVNP(unittest.TestCase):
         ]
 
         for info in test_data:
-            pattern = CentralVertexNumberingPattern(*info[0])
+            pattern = CentralVertexNumbering(*info[0])
             self.assertEqual(pattern.get_variables(), info[1])
 
         # omit zeros
@@ -148,11 +148,11 @@ class TestCVNP(unittest.TestCase):
         ]
 
         for info in test_data:
-            pattern = CentralVertexNumberingPattern(*info[0])
+            pattern = CentralVertexNumbering(*info[0])
             self.assertEqual(pattern.get_variables(omit_zeros=True), info[1])
 
     def test_copy(self):
-        pattern = CentralVertexNumberingPattern(4, ('i', '2i'), ('2i', 'i'))
+        pattern = CentralVertexNumbering(4, ('i', '2i'), ('2i', 'i'))
         copy_of_pattern = pattern.copy()
         self.assertEqual(pattern, copy_of_pattern)
 
@@ -172,10 +172,10 @@ class TestCVNP(unittest.TestCase):
         ]
 
         for info in test_data:
-            pattern = CentralVertexNumberingPattern(*info[0])
+            pattern = CentralVertexNumbering(*info[0])
             pattern.zip(inplace=True)
 
-            expected = CentralVertexNumberingPattern(*info[1])
+            expected = CentralVertexNumbering(*info[1])
             self.assertEqual(pattern, expected)
 
     def test_substitute(self):
@@ -199,9 +199,9 @@ class TestCVNP(unittest.TestCase):
         ]
 
         for info in test_data:
-            pattern = CentralVertexNumberingPattern(*info[1])
+            pattern = CentralVertexNumbering(*info[1])
             pattern.substitute(**info[0], inplace=True)
-            expected = CentralVertexNumberingPattern(*info[2])
+            expected = CentralVertexNumbering(*info[2])
             self.assertEqual(pattern, expected)
 
     def test_reverse(self):
@@ -220,8 +220,8 @@ class TestCVNP(unittest.TestCase):
         ]
 
         for info in test_data:
-            pattern = CentralVertexNumberingPattern(*info[0])
-            expected = CentralVertexNumberingPattern(*info[1])
+            pattern = CentralVertexNumbering(*info[0])
+            expected = CentralVertexNumbering(*info[1])
 
             pattern.reverse(inplace=True)
             self.assertEqual(pattern, expected)
