@@ -18,13 +18,16 @@ class NTermRecursionSequence():
         # the sequence) (the variable i from class description)
         # Other variables are considered global.
 
+        # init with <NTermRecursionSequence>
         if len(args) == 1 and type(args[0]) == NTermRecursionSequence:
             self.n = args[0].n
             self.formulas = args[0].formulas.copy()
 
+        # init with a tuple/list of formulas
         elif len(args) == 1 and type(args[0]) in {tuple, list}:
             NTermRecursionSequence.__init__(self, *args[0])
 
+        # init with formulas
         else:
             self.n = len(args)
 

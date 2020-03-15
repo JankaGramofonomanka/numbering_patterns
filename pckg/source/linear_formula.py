@@ -16,17 +16,23 @@ class LinearFormula():
 
         if len(args) == 1:
             arg = args[0]
-            if type(arg) == type(self):
+
+            # init with <LinearFormula>
+            if type(arg) == LinearFormula:
                 self.multipliers = arg.multipliers.copy()
                 self.variables = arg.variables.copy()
 
+            # init with string
             elif type(arg) == str:
                 self.read_from_string(arg)
 
+            # init with dict
             elif type(arg) == dict:
                 for variable, multiplier in arg.items():
                     self.variables.append(variable)
                     self.multipliers.append(int(multiplier))
+
+            # init with something convertible to an integer
             else:
                 try:
                     self.multipliers.append(int(arg))
@@ -36,6 +42,7 @@ class LinearFormula():
                 except TypeError:
                     raise TypeError(f'invalid argument: {arg}')
 
+        # init with lists
         elif len(args) == 2 and type(args[0]) == type(args[1]) == list:
             if len(args[0]) != len(args[1]):
                 raise ValueError("""lists of multipliers and variables must 
