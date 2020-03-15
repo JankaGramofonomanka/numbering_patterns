@@ -8,20 +8,23 @@ class NTermRecursionSequence():
     # f1(i), f2(i), f3(i) looks like this:
     # f1(0), f2(0), f3(0), f1(1), f2(1), f3(1), f1(2), f2(2), f3(2), ...
 
-    def __init__(self, *args):
+    def __init__(self, *args, ntuple_index=None):
         """Initializes the sequence"""
         # args should consist of another instance of <NTermRecursionSequence>
         # or of formulas (values convertible to <LinearFormula>) determining
         # the sequence.
-        # The variable 'i' is assumed to correspond to the place in the
-        # sequence ('i' == 'index' // n, where 'index' is the actual place in
-        # the sequence) (the variable i from class description)
+        # the argument <ntuple_index> represents the number of the n-tuple in
+        # which the actual index is in (<ntuple_index> == index // n)
+        # (<ntuple_index> == the variable i from class description)
         # Other variables are considered global.
 
         # init with <NTermRecursionSequence>
         if len(args) == 1 and type(args[0]) == NTermRecursionSequence:
-            self.n = args[0].n
-            self.formulas = args[0].formulas.copy()
+            if ntuple_index is None:
+                ntuple_index = args[0].ntuple_index
+
+            NTermRecursionSequence.__init__(
+                self, *args[0].formulas, ntuple_index=ntuple_index)
 
         # init with formulas
         else:
@@ -32,11 +35,20 @@ class NTermRecursionSequence():
             for formula in args:
                 self.formulas.append(LinearFormula(formula))
 
+            if ntuple_index is None:
+                self.ntuple_index = 'i'
+            elif type(ntuple_index) == str:
+                self.ntuple_index = ntuple_index
+            else:
+                raise TypeError('the ntuple_index argument is not a string')
+
     def __str__(self):
         return f'{self.n}-TRSeq(' + self.formulas_str() + ')'
 
     def __eq__(self, other):
-        return self.n == other.n and self.formulas == other.formulas
+        return (self.n == other.n
+            and self.formulas == other.formulas
+            and self.ntuple_index == other.ntuple_index)
 
     def formulas_str(self):
         """Returns a string with formulas that determine the sequence"""
@@ -55,9 +67,9 @@ class NTermRecursionSequence():
     def evaluate(self, index):
         """Returns <index>-th formula of the sequence, in the simplest form"""
 
-        mod_n = index % self.n
+        r = index % self.n
         i = index // self.n
-        return self.formulas[mod_n].substitute(i=i).zip()
+        return self.formulas[r].substitute(**{self.ntuple_index: i}).zip()
 
     def print(self, length):
         """Prints the first <length> elements of the sequence"""
@@ -71,12 +83,15 @@ class NTermRecursionSequence():
         string = f'({string})'
         print(string)
 
-    def get_variables(self, omit_zeros=False):
+    def get_variables(self, omit_zeros=False, omit_ntuple_index=False):
         """Returns a set of variables used by any of the formulas"""
 
         result = set({})
         for formula in self.formulas:
             result |= formula.get_variables(omit_zeros=omit_zeros)
+
+        if omit_ntuple_index == False:
+            result |= {self.ntuple_index}
 
         return result
 
