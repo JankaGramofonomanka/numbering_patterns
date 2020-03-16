@@ -1,4 +1,4 @@
-from pckg.source import misc
+from numbering_patterns.source import misc
 
 
 class LinearFormula():

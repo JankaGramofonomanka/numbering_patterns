@@ -1,4 +1,4 @@
-from pckg.source.linear_formula import LinearFormula
+from numbering_patterns.source.linear_formula import LinearFormula
 
 class Case():
     """A class that represents a case in a mathematical proof"""

@@ -1,5 +1,5 @@
 import unittest
-from pckg.source.linear_formula import LinearFormula
+from numbering_patterns.source.linear_formula import LinearFormula
 
 class TestOther(unittest.TestCase):
 
