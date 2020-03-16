@@ -20,28 +20,35 @@ class CentralVertexNumbering():
 
     def __init__(self, central_number, left_seq, right_seq, 
         l_len='inf', r_len='inf'):
+        """Initializes the pattern"""
 
+        # central vertex number
         self.center = LinearFormula(central_number)
 
+        # left-hand sequence
         if type(left_seq) in {list, tuple}:
             self.left_seq = NTermRecursionSequence(*left_seq)
         else:
             self.left_seq = NTermRecursionSequence(left_seq)
 
+        # right-hand sequence
         if type(right_seq) in {list, tuple}:
             self.right_seq = NTermRecursionSequence(*right_seq)
         else:
             self.right_seq = NTermRecursionSequence(right_seq)
 
+        # lengths of the sequences
         self.left_len = LinearFormula(l_len)
         self.right_len = LinearFormula(r_len)
 
-        ntuple_indexes = {
+        # make sure that any of the <ntuple_index> attributes of the sequences
+        # is not used as a variable by any of the other formulas
+        ntuple_indices = {
             self.left_seq.ntuple_index, self.right_seq.ntuple_index}
 
-        if (self.center.get_variables() & ntuple_indexes != set({})
-            or self.left_len.get_variables() & ntuple_indexes != set({})
-            or self.right_len.get_variables() & ntuple_indexes != set({})):
+        if (self.center.get_variables() & ntuple_indices != set({})
+            or self.left_len.get_variables() & ntuple_indices != set({})
+            or self.right_len.get_variables() & ntuple_indices != set({})):
 
             raise ValueError(
                 "one of the arguments: center_number, l_len, r_len uses the"
@@ -60,7 +67,7 @@ class CentralVertexNumbering():
         string += f'left: {self.left_seq.formulas_str()}, '
         string += f'right: {self.right_seq.formulas_str()}'
 
-        string = f'CVNP({string})'
+        string = f'CVN({string})'
 
         return string
 
@@ -98,12 +105,12 @@ class CentralVertexNumbering():
         else:
             # check if the substitute formulas use one of the <ntuple_index>
             # variables
-            ntuple_indexes = {
+            ntuple_indices = {
                 self.left_seq.ntuple_index, self.right_seq.ntuple_index}
 
             for formula in kwargs.values():
                 variables = LinearFormula(formula).get_variables()
-                if variables & ntuple_indexes != set({}):
+                if variables & ntuple_indices != set({}):
                     raise ValueError(
                         "one of the formulas uses left or right sequences'"
                         + " ntuple_index variable,"

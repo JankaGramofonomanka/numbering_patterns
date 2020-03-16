@@ -13,9 +13,9 @@ class NTermRecursionSequence():
 
     def __init__(self, *args, ntuple_index=None):
         """Initializes the sequence"""
-        # args should consist of another instance of <NTermRecursionSequence>
-        # or of formulas (values convertible to <LinearFormula>) determining
-        # the sequence.
+        # <args> should consist of another instance of
+        # <NTermRecursionSequence> or of formulas (values convertible to
+        # <LinearFormula>) determining the sequence.
         # The argument <ntuple_index> represents the number of the n-tuple in
         # which the actual index is in ("<ntuple_index> == index // n" or
         # "<ntuple_index> == the variable i from class description").
@@ -71,7 +71,8 @@ class NTermRecursionSequence():
 
     @misc.inplace(default=False)
     def substitute(self, **kwargs):
-        """Substitutes given variables for given formulas in all formulas"""
+        """Substitutes given variables for given formulas in all of the
+        sequence's formulas"""
         for i in range(self.n):
             self.formulas[i].substitute(**kwargs, inplace=True)
 
@@ -111,7 +112,7 @@ class NTermRecursionSequence():
         return string
 
     def evaluate(self, index):
-        """Returns <index>-th formula of the sequence, in the simplest form"""
+        """Returns <index>-th value of the sequence, in the simplest form"""
 
         r = index % self.n
         i = index // self.n

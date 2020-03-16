@@ -2,11 +2,13 @@ from pckg.source import misc
 
 
 class LinearFormula():
+    """A class to represent a linear formula (a first degree polynomial)"""
 
 
     #-INIT--------------------------------------------------------------------
 
     def __init__(self, *args):
+        """Initializes the formula"""
         
         self.multipliers = []
         self.variables = []
@@ -516,7 +518,7 @@ class LinearFormula():
         return result
 
     def get_variables(self, omit_zeros=False):
-        """Returns variables used by the formula"""
+        """Returns a set of variables used by the formula"""
 
         if omit_zeros:
             return set(self.zip().variables) - {''}
@@ -525,9 +527,4 @@ class LinearFormula():
 
     #-------------------------------------------------------------------------
 
-if __name__ == '__main__':
 
-    formula = LinearFormula('a + 3b')
-    formula.substitute(a='3x', inplace=True)
-
-    print(formula)
