@@ -32,6 +32,19 @@ class CentralVertexNumbering():
         self.left_len = LinearFormula(l_len)
         self.right_len = LinearFormula(r_len)
 
+        ntuple_indexes = {
+            self.left_seq.ntuple_index, self.right_seq.ntuple_index}
+
+        if (self.center.get_variables() & ntuple_indexes != set({})
+            or self.left_len.get_variables() & ntuple_indexes != set({})
+            or self.right_len.get_variables() & ntuple_indexes != set({})):
+
+            raise ValueError(
+                "one of the arguments: center_number, l_len, r_len uses the"
+                + " left or right sequence's ntuple_index variable")
+
+
+
     def __str__(self):
 
         string = ''
@@ -57,7 +70,7 @@ class CentralVertexNumbering():
                     the central vertex number   if <index> == 0"""
 
         if index == 0:
-            return self.center
+            return self.center.zip()
         elif index > 0:
             return self.right_seq.evaluate(index - 1)
         elif index < 0:
@@ -70,7 +83,7 @@ class CentralVertexNumbering():
         if l_len == 'default':
             try:
                 l_len = self.left_len.evaluate()
-            except  TypeError:
+            except TypeError:
                 raise TypeError('left sequence length is not a number')
 
         if r_len == 'default':
@@ -90,15 +103,21 @@ class CentralVertexNumbering():
 
         print(string)
 
-    def get_variables(self, omit_zeros=False):
+    def get_variables(self, omit_zeros=False, global_only=False):
         """Returns a set of variables used in any of the formulas that
         determine the pattern"""
 
         result = self.center.get_variables(omit_zeros=omit_zeros)
-        result |= self.left_seq.get_variables(omit_zeros=omit_zeros)
-        result |= self.right_seq.get_variables(omit_zeros=omit_zeros)
+
+        result |= self.left_seq.get_variables(
+            omit_zeros=omit_zeros, global_only=global_only)
+
+        result |= self.right_seq.get_variables(
+            omit_zeros=omit_zeros, global_only=global_only)
+
         if self.left_len != LinearFormula('inf'):
             result |= self.left_len.get_variables(omit_zeros=omit_zeros)
+
         if self.right_len != LinearFormula('inf'):
             result |= self.right_len.get_variables(omit_zeros=omit_zeros)
 
@@ -120,15 +139,33 @@ class CentralVertexNumbering():
         self.right_len.zip(inplace=True)
 
     @misc.inplace(default=False)
-    def substitute(self, **kwargs):
+    def substitute(self, only_sequences=False, **kwargs):
         """Substitutes given variables for given formulas in all formulas
         determining the pattern"""
 
-        self.center.substitute(**kwargs, inplace=True)
-        self.left_seq.substitute(**kwargs, inplace=True)
-        self.right_seq.substitute(**kwargs, inplace=True)
-        self.left_len.substitute(**kwargs, inplace=True)
-        self.right_len.substitute(**kwargs, inplace=True)
+        if only_sequences == True:
+            self.left_seq.substitute(**kwargs, inplace=True)
+            self.right_seq.substitute(**kwargs, inplace=True)
+
+        else:
+            # check if the substitute formulas use one of the <ntuple_index>
+            # variables
+            ntuple_indexes = {
+                self.left_seq.ntuple_index, self.right_seq.ntuple_index}
+
+            for formula in kwargs.values():
+                variables = LinearFormula(formula).get_variables()
+                if variables & ntuple_indexes != set({}):
+                    raise ValueError(
+                        "one of the formulas uses left or right sequences'"
+                        + " ntuple_index variable,"
+                        + " use the keyword argument: only_sequences=True")
+
+            self.center.substitute(**kwargs, inplace=True)
+            self.left_seq.substitute(**kwargs, inplace=True)
+            self.right_seq.substitute(**kwargs, inplace=True)
+            self.left_len.substitute(**kwargs, inplace=True)
+            self.right_len.substitute(**kwargs, inplace=True)
 
     @misc.inplace(default=False)
     def reverse(self):
