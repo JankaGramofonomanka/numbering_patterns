@@ -3,7 +3,7 @@ from numbering_patterns.source.cv_numbering import CentralVertexNumbering
 from numbering_patterns.source.ntr_sequence import NTermRecursionSequence
 from numbering_patterns.source.linear_formula import LinearFormula
 
-class TestCVNP(unittest.TestCase):
+class TestCVN(unittest.TestCase):
 
 
     #-INIT--------------------------------------------------------------------
