@@ -8,14 +8,17 @@ class NTermRecursionSequence():
     # f1(i), f2(i), f3(i) looks like this:
     # f1(0), f2(0), f3(0), f1(1), f2(1), f3(1), f1(2), f2(2), f3(2), ...
 
+
+    #-INIT--------------------------------------------------------------------
+
     def __init__(self, *args, ntuple_index=None):
         """Initializes the sequence"""
         # args should consist of another instance of <NTermRecursionSequence>
         # or of formulas (values convertible to <LinearFormula>) determining
         # the sequence.
-        # the argument <ntuple_index> represents the number of the n-tuple in
-        # which the actual index is in (<ntuple_index> == index // n)
-        # (<ntuple_index> == the variable i from class description)
+        # The argument <ntuple_index> represents the number of the n-tuple in
+        # which the actual index is in ("<ntuple_index> == index // n" or
+        # "<ntuple_index> == the variable i from class description").
         # Other variables are considered global.
 
         # init with <NTermRecursionSequence>
@@ -42,6 +45,11 @@ class NTermRecursionSequence():
             else:
                 raise TypeError('the ntuple_index argument is not a string')
 
+    #-------------------------------------------------------------------------
+
+
+    #-MAGIC-METHOD-OVERLOADS--------------------------------------------------
+
     def __str__(self):
         return f'{self.n}-TRSeq(' + self.formulas_str() + ')'
 
@@ -49,6 +57,44 @@ class NTermRecursionSequence():
         return (self.n == other.n
             and self.formulas == other.formulas
             and self.ntuple_index == other.ntuple_index)
+
+    #-------------------------------------------------------------------------
+
+
+    #-MODIFIERS---------------------------------------------------------------
+
+    @misc.inplace(default=False)
+    def zip(self):
+        """Reduces all the formulas to the simplest form"""
+        for i in range(self.n):
+            self.formulas[i].zip(inplace=True)
+
+    @misc.inplace(default=False)
+    def substitute(self, **kwargs):
+        """Substitutes given variables for given formulas in all formulas"""
+        for i in range(self.n):
+            self.formulas[i].substitute(**kwargs, inplace=True)
+
+    #-------------------------------------------------------------------------
+
+
+    #-OTHER-------------------------------------------------------------------
+
+    def print(self, length):
+        """Prints the first <length> elements of the sequence"""
+
+        string = ''
+        for i in range(length - 1):
+            string += f'{str(self.evaluate(i))}, '
+
+        string += str(self.evaluate(length - 1))
+
+        string = f'({string})'
+        print(string)
+
+    def copy(self):
+        """Returns a copy of the sequence"""
+        return NTermRecursionSequence(self)
 
     def formulas_str(self):
         """Returns a string with formulas that determine the sequence"""
@@ -71,18 +117,6 @@ class NTermRecursionSequence():
         i = index // self.n
         return self.formulas[r].substitute(**{self.ntuple_index: i}).zip()
 
-    def print(self, length):
-        """Prints the first <length> elements of the sequence"""
-
-        string = ''
-        for i in range(length - 1):
-            string += f'{str(self.evaluate(i))}, '
-
-        string += str(self.evaluate(length - 1))
-
-        string = f'({string})'
-        print(string)
-
     def get_variables(self, omit_zeros=False, global_only=False):
         """Returns a set of variables used by the sequence"""
         # if <global_only> is True, the method will return a set of global
@@ -99,20 +133,5 @@ class NTermRecursionSequence():
 
         return result
 
-    @misc.inplace(default=False)
-    def zip(self):
-        """Reduces all the formulas to the simplest form"""
-        for i in range(self.n):
-            self.formulas[i].zip(inplace=True)
-
-    @misc.inplace(default=False)
-    def substitute(self, **kwargs):
-        """Substitutes given variables for given formulas in all formulas"""
-        for i in range(self.n):
-            self.formulas[i].substitute(**kwargs, inplace=True)
-
-    def copy(self):
-        """Returns a copy of the sequence"""
-        return NTermRecursionSequence(self)
-
+    #-------------------------------------------------------------------------
 

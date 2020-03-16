@@ -2,6 +2,7 @@ from pckg.source.linear_formula import LinearFormula
 from pckg.source.ntr_sequence import NTermRecursionSequence
 from pckg.source import misc
 
+
 class CentralVertexNumbering():
     """A class to represent a numbering pattern of a cycle determined by a
     central vertex number, left-hand and right-hand sequences"""
@@ -13,7 +14,10 @@ class CentralVertexNumbering():
     # ..., v_n-3, v_n-2, v_n-1, v_0, v_1,   v_2,   v_3, ...
     # where the cycle is v_0, v_1, v_2, ..., v_n-2, v_n-1, v_0,
     # and v_0 is chosen to be the central vertex
-    
+
+
+    #-INIT--------------------------------------------------------------------
+
     def __init__(self, central_number, left_seq, right_seq, 
         l_len='inf', r_len='inf'):
 
@@ -43,7 +47,10 @@ class CentralVertexNumbering():
                 "one of the arguments: center_number, l_len, r_len uses the"
                 + " left or right sequence's ntuple_index variable")
 
+    #-------------------------------------------------------------------------
 
+
+    #-MAGIC-METHOD-OVERLOADS--------------------------------------------------
 
     def __str__(self):
 
@@ -64,69 +71,10 @@ class CentralVertexNumbering():
             and self.left_len == other.left_len
             and self.right_len == other.right_len)
 
-    def evaluate(self, index):
-        """Returns: the <index>-th right number if <index> > 0,
-                    the <-index>-th left number if <index> < 0
-                    the central vertex number   if <index> == 0"""
+    #-------------------------------------------------------------------------
 
-        if index == 0:
-            return self.center.zip()
-        elif index > 0:
-            return self.right_seq.evaluate(index - 1)
-        elif index < 0:
-            return self.left_seq.evaluate(-index - 1)
 
-    def print(self, l_len='default', r_len='default'):
-        """prints the pattern from the <l_len>-th left number to the
-        <r_len>-th right number"""
-
-        if l_len == 'default':
-            try:
-                l_len = self.left_len.evaluate()
-            except TypeError:
-                raise TypeError('left sequence length is not a number')
-
-        if r_len == 'default':
-            try:
-                r_len = self.right_len.evaluate()
-            except TypeError:
-                raise TypeError('right sequence length is not a number')
-
-        string = ''
-
-        for i in range(-l_len, r_len):
-            string += f'{self.evaluate(i)}, '
-
-        string += f'{self.evaluate(r_len)}'
-
-        string = f'({string})'
-
-        print(string)
-
-    def get_variables(self, omit_zeros=False, global_only=False):
-        """Returns a set of variables used in any of the formulas that
-        determine the pattern"""
-
-        result = self.center.get_variables(omit_zeros=omit_zeros)
-
-        result |= self.left_seq.get_variables(
-            omit_zeros=omit_zeros, global_only=global_only)
-
-        result |= self.right_seq.get_variables(
-            omit_zeros=omit_zeros, global_only=global_only)
-
-        if self.left_len != LinearFormula('inf'):
-            result |= self.left_len.get_variables(omit_zeros=omit_zeros)
-
-        if self.right_len != LinearFormula('inf'):
-            result |= self.right_len.get_variables(omit_zeros=omit_zeros)
-
-        return result
-
-    def copy(self):
-        """Returns a copy of <self>"""
-        return CentralVertexNumbering(self.center, self.left_seq,
-            self.right_seq, self.left_len, self.right_len)
+    #-MODIFIERS---------------------------------------------------------------
 
     @misc.inplace(default=False)
     def zip(self):
@@ -178,3 +126,74 @@ class CentralVertexNumbering():
         temp_len = self.left_len.copy()
         self.left_len = self.right_len.copy()
         self.right_len = temp_len
+
+    #-------------------------------------------------------------------------
+
+
+    #-OTHER-------------------------------------------------------------------
+
+    def print(self, l_len='default', r_len='default'):
+        """prints the pattern from the <l_len>-th left number to the
+        <r_len>-th right number"""
+
+        if l_len == 'default':
+            try:
+                l_len = self.left_len.evaluate()
+            except TypeError:
+                raise TypeError('left sequence length is not a number')
+
+        if r_len == 'default':
+            try:
+                r_len = self.right_len.evaluate()
+            except TypeError:
+                raise TypeError('right sequence length is not a number')
+
+        string = ''
+
+        for i in range(-l_len, r_len):
+            string += f'{self.evaluate(i)}, '
+
+        string += f'{self.evaluate(r_len)}'
+
+        string = f'({string})'
+
+        print(string)
+
+    def copy(self):
+        """Returns a copy of <self>"""
+        return CentralVertexNumbering(self.center, self.left_seq,
+            self.right_seq, self.left_len, self.right_len)
+
+    def evaluate(self, index):
+        """Returns: the <index>-th right number if <index> > 0,
+                    the <-index>-th left number if <index> < 0
+                    the central vertex number   if <index> == 0"""
+
+        if index == 0:
+            return self.center.zip()
+        elif index > 0:
+            return self.right_seq.evaluate(index - 1)
+        elif index < 0:
+            return self.left_seq.evaluate(-index - 1)
+
+    def get_variables(self, omit_zeros=False, global_only=False):
+        """Returns a set of variables used in any of the formulas that
+        determine the pattern"""
+
+        result = self.center.get_variables(omit_zeros=omit_zeros)
+
+        result |= self.left_seq.get_variables(
+            omit_zeros=omit_zeros, global_only=global_only)
+
+        result |= self.right_seq.get_variables(
+            omit_zeros=omit_zeros, global_only=global_only)
+
+        if self.left_len != LinearFormula('inf'):
+            result |= self.left_len.get_variables(omit_zeros=omit_zeros)
+
+        if self.right_len != LinearFormula('inf'):
+            result |= self.right_len.get_variables(omit_zeros=omit_zeros)
+
+        return result
+
+    #-------------------------------------------------------------------------

@@ -5,6 +5,9 @@ from pckg.source.linear_formula import LinearFormula
 
 class TestCVNP(unittest.TestCase):
 
+
+    #-INIT--------------------------------------------------------------------
+
     def test_init(self):
 
         test_data = [
@@ -75,6 +78,11 @@ class TestCVNP(unittest.TestCase):
             new_args[2] = NTermRecursionSequence(*args[2], ntuple_index='j')
             self.assertRaises(ValueError, CentralVertexNumbering, *new_args)
 
+    #-------------------------------------------------------------------------
+
+
+    #-MAGIC-METHOD-OVERLOADS--------------------------------------------------
+
     def test_eq(self):
 
         # equal
@@ -112,104 +120,10 @@ class TestCVNP(unittest.TestCase):
             pattern_2 = CentralVertexNumbering(*info[1])
             self.assertNotEqual(pattern_1, pattern_2)
 
-    def test_evaluate(self):
+    #-------------------------------------------------------------------------
 
-        test_data = [
-            # init args/
-            # /(index, value)/
-            # /(index, value) cd.
-            ((4, ('i', '2i'), ('2i', 'i'), 3, 3),
-             (0, 4),    (-1, 0),    (-2, 0),    (-3, 1),    (-4, 2),
-             (1, 0),    (2, 0),     (3, 2),     (4, 1),     (5, 4)),
 
-            (('2', ('a + i', '2i', '6i'), ('2i', 'i')),
-             (0, 2),    (1, 0),     (2, 0),     (3, 2),         (4, 1),
-             (-1, 'a'), (-2, 0),    (-3, 0),    (-4, 'a + 1'),  (-5, 2)),
-
-            ((4, ('i',), ('2i',), 3, 3),
-             (0, 4),    (1, 0),     (2, 2),     (3, 4),     (4, 6),
-             (-1, 0),   (-2, 1),    (-3, 2),    (-4, 3),    (-5, 4)),
-
-            ((4, ('i', 'i'), ('2i', '2i'), 3, 3),
-             (0, 4),    (1, 0),     (2, 0),     (3, 2),     (4, 2),
-             (-1, 0),   (-2, 0),    (-3, 1),    (-4, 1),    (-5, 2)),
-
-            (('2n', ('3', '2'), ('a', 'i'), 3, 3),
-             (0, '2n'), (1, 'a'),   (2, 0),     (3, 'a'),   (4, 1),
-             (-1, 3),   (-2, 2),    (-3, 3),    (-4, 2),    (-5, 3)),
-        ]
-
-        for info in test_data:
-            pattern = CentralVertexNumbering(*info[0])
-            for index, value in info[1:]:
-                result = pattern.evaluate(index)
-                expected_result = LinearFormula(value).zip()
-                self.assertEqual(result, expected_result)
-
-    def test_get_variables(self):
-
-        test_data = [
-            # init args                            variables in use
-            ((4, ('i', '2i'), ('2i', 'i'), 3, 3),  {'i'}                    ),
-            (('2', ('a + i', '6i'), ('2i', 'i')),  {'a', 'i'}               ),
-            ((4, ('i',), ('2b',), 3, 3),           {'i', 'b'}               ),
-            (('a', ('b',), ('c',), 'd', 'e'),      {'a', 'b', 'c', 'd', 'e'}),
-            (('a', ('a',), ('a',), 'a', 'a'),      {'a'}                    ),
-            (('2n', ('3', '2'), ('a', 'i'), 3, 3), {'n', 'a', 'i'}          ),
-            (('0a', ('0b',), ('0c',), '0d', '0e'), {'a', 'b', 'c', 'd', 'e'}),
-        ]
-
-        for info in test_data:
-            pattern = CentralVertexNumbering(*info[0])
-
-            # don't omit anything
-            self.assertEqual(pattern.get_variables(), info[1])
-
-            # omit local variables
-            self.assertEqual(
-                pattern.get_variables(global_only=True), info[1] - {'i'})
-
-        # omit zeros
-        test_data = [
-            # init args                             variables in use
-            (('0a', ('b',), ('c',), 'd', 'e'),      {'b', 'c', 'd', 'e'}),
-            (('a', ('0b',), ('c',), 'd', 'e'),      {'a', 'c', 'd', 'e'}),
-            (('a', ('b',), ('0c',), 'd', 'e'),      {'a', 'b', 'd', 'e'}),
-            (('a', ('b',), ('c',), '0d', 'e'),      {'a', 'b', 'c', 'e'}),
-            (('a', ('b',), ('c',), 'd', '0e'),      {'a', 'b', 'c', 'd'}),
-
-            (('0a', ('a',), (1,), 1, 1),            {'a'}               ),
-            ((1, ('0a',), ('a',), 1, 1),            {'a'}               ),
-            ((1, (1,), ('0a',), 'a', 1),            {'a'}               ),
-            ((1, (1,), (1,), '0a', 'a'),            {'a'}               ),
-
-            (('a', ('0a',), (1,), 1, 1),            {'a'}               ),
-            ((1, ('a',), ('0a',), 1, 1),            {'a'}               ),
-            ((1, (1,), ('a',), '0a', 1),            {'a'}               ),
-            ((1, (1,), (1,), 'a', '0a'),            {'a'}               ),
-
-            (('0a', ('0b',), ('0c',), '0d', '0e'),  set({})             ),
-        ]
-
-        for info in test_data:
-            pattern = CentralVertexNumbering(*info[0])
-            self.assertEqual(pattern.get_variables(omit_zeros=True), info[1])
-
-    def test_copy(self):
-        pattern = CentralVertexNumbering(4, ('i', '2i'), ('2i', 'i'))
-
-        # copy
-        copy_of_pattern = pattern.copy()
-        self.assertEqual(pattern, copy_of_pattern)
-
-        # modify the copy
-        copy_of_pattern.center = LinearFormula(5)
-        self.assertNotEqual(pattern, copy_of_pattern)
-
-        # copy again and modify the copy's attribute
-        copy_of_pattern = pattern.copy()
-        copy_of_pattern.left_seq.formulas[0] += '3c'
-        self.assertNotEqual(pattern, copy_of_pattern)
+    #-MODIFIERS---------------------------------------------------------------
 
     def test_zip(self):
 
@@ -342,3 +256,109 @@ class TestCVNP(unittest.TestCase):
 
             pattern.reverse(inplace=True)
             self.assertEqual(pattern, expected)
+
+    #-------------------------------------------------------------------------
+
+
+    #-OTHER-------------------------------------------------------------------
+
+    def test_copy(self):
+        pattern = CentralVertexNumbering(4, ('i', '2i'), ('2i', 'i'))
+
+        # copy
+        copy_of_pattern = pattern.copy()
+        self.assertEqual(pattern, copy_of_pattern)
+
+        # modify the copy
+        copy_of_pattern.center = LinearFormula(5)
+        self.assertNotEqual(pattern, copy_of_pattern)
+
+        # copy again and modify the copy's attribute
+        copy_of_pattern = pattern.copy()
+        copy_of_pattern.left_seq.formulas[0] += '3c'
+        self.assertNotEqual(pattern, copy_of_pattern)
+
+    def test_evaluate(self):
+
+        test_data = [
+            # init args/
+            # /(index, value)/
+            # /(index, value) cd.
+            ((4, ('i', '2i'), ('2i', 'i'), 3, 3),
+             (0, 4),    (-1, 0),    (-2, 0),    (-3, 1),    (-4, 2),
+             (1, 0),    (2, 0),     (3, 2),     (4, 1),     (5, 4)),
+
+            (('2', ('a + i', '2i', '6i'), ('2i', 'i')),
+             (0, 2),    (1, 0),     (2, 0),     (3, 2),         (4, 1),
+             (-1, 'a'), (-2, 0),    (-3, 0),    (-4, 'a + 1'),  (-5, 2)),
+
+            ((4, ('i',), ('2i',), 3, 3),
+             (0, 4),    (1, 0),     (2, 2),     (3, 4),     (4, 6),
+             (-1, 0),   (-2, 1),    (-3, 2),    (-4, 3),    (-5, 4)),
+
+            ((4, ('i', 'i'), ('2i', '2i'), 3, 3),
+             (0, 4),    (1, 0),     (2, 0),     (3, 2),     (4, 2),
+             (-1, 0),   (-2, 0),    (-3, 1),    (-4, 1),    (-5, 2)),
+
+            (('2n', ('3', '2'), ('a', 'i'), 3, 3),
+             (0, '2n'), (1, 'a'),   (2, 0),     (3, 'a'),   (4, 1),
+             (-1, 3),   (-2, 2),    (-3, 3),    (-4, 2),    (-5, 3)),
+        ]
+
+        for info in test_data:
+            pattern = CentralVertexNumbering(*info[0])
+            for index, value in info[1:]:
+                result = pattern.evaluate(index)
+                expected_result = LinearFormula(value).zip()
+                self.assertEqual(result, expected_result)
+
+    def test_get_variables(self):
+
+        test_data = [
+            # init args                            variables in use
+            ((4, ('i', '2i'), ('2i', 'i'), 3, 3),  {'i'}                    ),
+            (('2', ('a + i', '6i'), ('2i', 'i')),  {'a', 'i'}               ),
+            ((4, ('i',), ('2b',), 3, 3),           {'i', 'b'}               ),
+            (('a', ('b',), ('c',), 'd', 'e'),      {'a', 'b', 'c', 'd', 'e'}),
+            (('a', ('a',), ('a',), 'a', 'a'),      {'a'}                    ),
+            (('2n', ('3', '2'), ('a', 'i'), 3, 3), {'n', 'a', 'i'}          ),
+            (('0a', ('0b',), ('0c',), '0d', '0e'), {'a', 'b', 'c', 'd', 'e'}),
+        ]
+
+        for info in test_data:
+            pattern = CentralVertexNumbering(*info[0])
+
+            # don't omit anything
+            self.assertEqual(pattern.get_variables(), info[1])
+
+            # omit local variables
+            self.assertEqual(
+                pattern.get_variables(global_only=True), info[1] - {'i'})
+
+        # omit zeros
+        test_data = [
+            # init args                             variables in use
+            (('0a', ('b',), ('c',), 'd', 'e'),      {'b', 'c', 'd', 'e'}),
+            (('a', ('0b',), ('c',), 'd', 'e'),      {'a', 'c', 'd', 'e'}),
+            (('a', ('b',), ('0c',), 'd', 'e'),      {'a', 'b', 'd', 'e'}),
+            (('a', ('b',), ('c',), '0d', 'e'),      {'a', 'b', 'c', 'e'}),
+            (('a', ('b',), ('c',), 'd', '0e'),      {'a', 'b', 'c', 'd'}),
+
+            (('0a', ('a',), (1,), 1, 1),            {'a'}               ),
+            ((1, ('0a',), ('a',), 1, 1),            {'a'}               ),
+            ((1, (1,), ('0a',), 'a', 1),            {'a'}               ),
+            ((1, (1,), (1,), '0a', 'a'),            {'a'}               ),
+
+            (('a', ('0a',), (1,), 1, 1),            {'a'}               ),
+            ((1, ('a',), ('0a',), 1, 1),            {'a'}               ),
+            ((1, (1,), ('a',), '0a', 1),            {'a'}               ),
+            ((1, (1,), (1,), 'a', '0a'),            {'a'}               ),
+
+            (('0a', ('0b',), ('0c',), '0d', '0e'),  set({})             ),
+        ]
+
+        for info in test_data:
+            pattern = CentralVertexNumbering(*info[0])
+            self.assertEqual(pattern.get_variables(omit_zeros=True), info[1])
+
+    #-------------------------------------------------------------------------
