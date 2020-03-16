@@ -83,15 +83,19 @@ class NTermRecursionSequence():
         string = f'({string})'
         print(string)
 
-    def get_variables(self, omit_zeros=False, omit_ntuple_index=False):
-        """Returns a set of variables used by any of the formulas"""
+    def get_variables(self, omit_zeros=False, global_only=False):
+        """Returns a set of variables used by the sequence"""
+        # if <global_only> is True, the method will return a set of global
+        # variables used by the sequence's formulas,
+        # otherwise, if any of the formulas uses the <self.ntuple_index>
+        # variable, the returned set will include it
 
         result = set({})
         for formula in self.formulas:
             result |= formula.get_variables(omit_zeros=omit_zeros)
 
-        if omit_ntuple_index == False:
-            result |= {self.ntuple_index}
+        if global_only == True:
+            result -= {self.ntuple_index}
 
         return result
 

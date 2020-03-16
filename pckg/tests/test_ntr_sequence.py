@@ -223,12 +223,12 @@ class TestNTRSequence(unittest.TestCase):
 
         for info in test_data:
             seq = NTermRecursionSequence(*info[0])
-            self.assertEqual(seq.get_variables(), info[1] | {'i'})
+            self.assertEqual(seq.get_variables(), info[1])
 
             # omit ntuple index
             self.assertEqual(
-                seq.get_variables(omit_ntuple_index=True),
-                info[1])
+                seq.get_variables(global_only=True),
+                info[1] - {'i'})
 
         test_data = [
             (('a + 0i', 'b'),       {'a', 'b'}  ),
@@ -240,6 +240,6 @@ class TestNTRSequence(unittest.TestCase):
         for info in test_data:
             seq = NTermRecursionSequence(*info[0])
             self.assertEqual(
-                seq.get_variables(omit_zeros=True, omit_ntuple_index=True),
+                seq.get_variables(omit_zeros=True),
                 info[1])
 
