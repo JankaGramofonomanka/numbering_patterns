@@ -293,6 +293,28 @@ class TestCVN(unittest.TestCase):
             pattern.reverse(inplace=True)
             self.assertEqual(pattern, expected)
 
+    def test_set_lengths(self):
+
+        test_data = [
+            # init args
+            (4,     ('i', '2i'),    ('2i', 'i'),    3,      3       ),
+            ('2n',  ('i', '2i'),    ('2i', 'i'),    '2k',   '2k + 1'),
+            (4,     ('i', '2i'),    ('2i', 'i')),
+        ]
+
+        lengths = [
+            (5, 8), ('2k', '3k'), ('2n', 7),
+            (LinearFormula(3), LinearFormula(6))
+        ]
+
+        for args in test_data:
+            pattern = CentralVertexNumbering(*args)
+
+            for l_len, r_len in lengths:
+                pattern.set_lengths(l_len, r_len, inplace=True)
+                self.assertEqual(pattern.left_len, LinearFormula(l_len))
+                self.assertEqual(pattern.right_len, LinearFormula(r_len))
+
     #-------------------------------------------------------------------------
 
 

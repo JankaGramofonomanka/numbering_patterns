@@ -176,6 +176,13 @@ class CentralVertexNumbering():
         self.left_len = self.right_len.copy()
         self.right_len = temp_len
 
+    @misc.inplace(default=False)
+    def set_lengths(self, l_len, r_len):
+        """Sets the lengths of the left and right sequences"""
+
+        self.left_len = LinearFormula(l_len)
+        self.right_len = LinearFormula(r_len)
+
     #-------------------------------------------------------------------------
 
 
@@ -215,7 +222,7 @@ class CentralVertexNumbering():
 
     def evaluate(self, index):
         """Returns: the <index>-th right number if <index> > 0,
-                    the <-index>-th left number if <index> < 0
+                    the <-index>-th left number if <index> < 0,
                     the central vertex number   if <index> == 0"""
 
         if index == 0:
