@@ -130,7 +130,7 @@ class NTermRecursionSequence():
         # otherwise, if any of the formulas uses the <self.ntuple_index>
         # variable, the returned set will include it
 
-        result = set({})
+        result = set()
         for formula in self.formulas:
             result |= formula.get_variables(omit_zeros=omit_zeros)
 

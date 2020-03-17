@@ -18,32 +18,42 @@ class TestCVN(unittest.TestCase):
         ]
 
         for info in test_data:
+
             # pass sequences as strings
             pattern_1 = CentralVertexNumbering(*info)
 
             # pass sequences as <NTermRecursionSequence>
             args = list(info)
-            args[1] = NTermRecursionSequence(*args[1])
-            args[2] = NTermRecursionSequence(*args[2])
+            args[1] = NTermRecursionSequence(*info[1])
+            args[2] = NTermRecursionSequence(*info[2])
             pattern_2 = CentralVertexNumbering(*args)
 
-            self.assertEqual(pattern_1.center, LinearFormula(info[0]))
-            self.assertEqual(pattern_2.center, LinearFormula(info[0]))
-            left_seq = NTermRecursionSequence(*info[1])
-            right_seq = NTermRecursionSequence(*info[2])
-            self.assertEqual(pattern_1.left_seq, left_seq)
-            self.assertEqual(pattern_2.left_seq, left_seq)
-            self.assertEqual(pattern_1.right_seq, right_seq)
-            self.assertEqual(pattern_2.right_seq, right_seq)
+            # init with kwargs
+            kwargs = {}
+            kwargs['center'] = info[0]
+            kwargs['left_seq'] = info[1]
+            kwargs['right_seq'] = info[2]
+            if len(info) > 3:
+                kwargs['l_len'] = info[3]
+                kwargs['r_len'] = info[4]
 
-            if len(info) == 3:
-                args.append('inf')
-                args.append('inf')
+            pattern_3 = CentralVertexNumbering(**kwargs)
 
-            self.assertEqual(pattern_1.left_len, LinearFormula(args[3]))
-            self.assertEqual(pattern_2.left_len, LinearFormula(args[3]))
-            self.assertEqual(pattern_1.right_len, LinearFormula(args[4]))
-            self.assertEqual(pattern_2.right_len, LinearFormula(args[4]))
+            for pattern in [pattern_1, pattern_2, pattern_3]:
+                self.assertEqual(pattern.center, LinearFormula(info[0]))
+
+                left_seq = NTermRecursionSequence(*info[1])
+                right_seq = NTermRecursionSequence(*info[2])
+                self.assertEqual(pattern.left_seq, left_seq)
+                self.assertEqual(pattern.right_seq, right_seq)
+
+                if len(info) > 3:
+                    self.assertEqual(pattern.left_len, LinearFormula(info[3]))
+                    self.assertEqual(
+                        pattern.right_len, LinearFormula(info[4]))
+                else:
+                    self.assertEqual(pattern.left_len, LinearFormula('inf'))
+                    self.assertEqual(pattern.right_len, LinearFormula('inf'))
 
     def test_invalid_init(self):
 
@@ -380,7 +390,7 @@ class TestCVN(unittest.TestCase):
             ((1, (1,), ('a',), '0a', 1),            {'a'}               ),
             ((1, (1,), (1,), 'a', '0a'),            {'a'}               ),
 
-            (('0a', ('0b',), ('0c',), '0d', '0e'),  set({})             ),
+            (('0a', ('0b',), ('0c',), '0d', '0e'),  set()               ),
         ]
 
         for info in test_data:

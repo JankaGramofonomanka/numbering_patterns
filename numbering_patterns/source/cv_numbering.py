@@ -18,41 +18,75 @@ class CentralVertexNumbering():
 
     #-INIT--------------------------------------------------------------------
 
-    def __init__(self, central_number, left_seq, right_seq, 
-        l_len='inf', r_len='inf'):
+    def __init__(self, *args, **kwargs):
         """Initializes the pattern"""
 
-        # central vertex number
-        self.center = LinearFormula(central_number)
+        # either args or kwargs
+        if len(args) > 0 and len(kwargs) > 0:
+            raise TypeError(
+                'this method can use either positional or keyword arguments')
 
-        # left-hand sequence
-        if type(left_seq) in {list, tuple}:
-            self.left_seq = NTermRecursionSequence(*left_seq)
+        # init with another pattern
+        if len(args) == 1 and type(args[0]) == CentralVertexNumbering:
+            CentralVertexNumbering.__init__(
+                self, args[0].center, args[0].left_seq, args[0].right_seq,
+                args[0].left_len, args[0].right_len)
+
+        # init with positional args
+        elif len(args) > 1:
+            try:
+                l_len = args[3]
+            except IndexError:
+                l_len = 'inf'
+
+            try:
+                r_len = args[4]
+            except IndexError:
+                r_len = 'inf'
+
+            CentralVertexNumbering.__init__(
+                self, center=args[0], left_seq=args[1], right_seq=args[2],
+                l_len=l_len, r_len=r_len)
+
+        # init with keywords
         else:
-            self.left_seq = NTermRecursionSequence(left_seq)
 
-        # right-hand sequence
-        if type(right_seq) in {list, tuple}:
-            self.right_seq = NTermRecursionSequence(*right_seq)
-        else:
-            self.right_seq = NTermRecursionSequence(right_seq)
+            # central vertex number
+            self.center = LinearFormula(kwargs['center'])
 
-        # lengths of the sequences
-        self.left_len = LinearFormula(l_len)
-        self.right_len = LinearFormula(r_len)
+            # left-hand sequence
+            if type(kwargs['left_seq']) in {list, tuple}:
+                self.left_seq = NTermRecursionSequence(*kwargs['left_seq'])
+            else:
+                self.left_seq = NTermRecursionSequence(kwargs['left_seq'])
 
-        # make sure that any of the <ntuple_index> attributes of the sequences
-        # is not used as a variable by any of the other formulas
-        ntuple_indices = {
-            self.left_seq.ntuple_index, self.right_seq.ntuple_index}
+            # right-hand sequence
+            if type(kwargs['right_seq']) in {list, tuple}:
+                self.right_seq = NTermRecursionSequence(*kwargs['right_seq'])
+            else:
+                self.right_seq = NTermRecursionSequence(kwargs['right_seq'])
 
-        if (self.center.get_variables() & ntuple_indices != set({})
-            or self.left_len.get_variables() & ntuple_indices != set({})
-            or self.right_len.get_variables() & ntuple_indices != set({})):
+            # lengths of the sequences
+            if 'l_len' not in kwargs.keys():
+                kwargs['l_len'] = 'inf'
+            if 'r_len' not in kwargs.keys():
+                kwargs['r_len'] = 'inf'
 
-            raise ValueError(
-                "one of the arguments: center_number, l_len, r_len uses the"
-                + " left or right sequence's ntuple_index variable")
+            self.left_len = LinearFormula(kwargs['l_len'])
+            self.right_len = LinearFormula(kwargs['r_len'])
+
+            # make sure that any of the <ntuple_index> attributes of the
+            # sequences is not used as a variable by any of the other formulas
+            ntuple_indices = {
+                self.left_seq.ntuple_index, self.right_seq.ntuple_index}
+
+            if (self.center.get_variables() & ntuple_indices != set()
+                or self.left_len.get_variables() & ntuple_indices != set()
+                or self.right_len.get_variables() & ntuple_indices != set()):
+
+                raise ValueError(
+                    "one of the arguments: center_number, l_len, r_len uses"
+                    + " the left or right sequence's ntuple_index variable")
 
     #-------------------------------------------------------------------------
 
@@ -118,7 +152,7 @@ class CentralVertexNumbering():
 
             for formula in kwargs.values():
                 variables = LinearFormula(formula).get_variables()
-                if variables & ntuple_indices != set({}):
+                if variables & ntuple_indices != set():
                     raise ValueError(
                         "one of the formulas uses left or right sequences'"
                         + " ntuple_index variable,"
