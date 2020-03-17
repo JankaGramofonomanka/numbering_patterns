@@ -175,7 +175,10 @@ class LinearFormula():
     def _process_variable(self, char):
         """Processes <char> given that <char> is part of a variable name"""
     
-        if LinearFormula._type_of_char(char) == 'char':
+        if LinearFormula._type_of_char(char) in {'char', 'number'}:
+            # the first character of the variable name has to pass through
+            # the <self._process_number> method so it won't be a number
+
             if self._current_variable is None:
                 self._current_variable = char
             else:
