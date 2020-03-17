@@ -1,4 +1,6 @@
 from numbering_patterns.source.linear_formula import LinearFormula
+from numbering_patterns.source.cv_numbering import CentralVertexNumbering
+
 
 class Case():
     """A class that represents a case in a mathematical proof"""
@@ -17,8 +19,46 @@ class Case():
         for variable, formula in self.variables.items():
             string += f'{variable} = {str(formula)}, '
 
-        string = f'Case({string})'
+        string = f'Case({string[:-2]})'
         return string
+
+
+class MyCase(Case):
+    """A class to represent a case in the context of numbering an SSA-cycle"""
+    # SSA-graph - Simply Sequentially Additive graph
+
+    def __init__(self, n, upper_pattern, lower_pattern, **kwargs):
+
+        Case.__init__(self, n=n, **kwargs)
+
+        self.upper_pattern = CentralVertexNumbering(upper_pattern)
+        self.lower_pattern = CentralVertexNumbering(lower_pattern)
+
+        # make sure that the lengths of the sequences sum up to <n>
+        len_1 = self.upper_pattern.left_len.copy()
+        len_1 += self.upper_pattern.right_len
+        len_1 += self.lower_pattern.left_len
+        len_1 += self.lower_pattern.right_len
+        len_1 += 2
+
+        len_1.substitute(**self.variables, inplace=True)
+        len_1.zip(inplace=True)
+
+        len_2 = self.variables['n'].copy()
+        while set(self.variables) & len_2.get_variables() != set():
+            len_2.substitute(**self.variables, inplace=True)
+            len_2.zip(inplace=True)
+
+        if len_1 != len_2:
+            raise ValueError('lengths of the sequences do not sum up to n')
+
+    def __str__(self):
+        string = f'My{Case.__str__(self)}'
+        string += f'\nupper pattern:{str(self.upper_pattern)}'
+        string += f'\nlower pattern:{str(self.lower_pattern)}'
+        return string
+
+
 
 
 
