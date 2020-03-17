@@ -83,6 +83,32 @@ class TestCVN(unittest.TestCase):
 
     #-MAGIC-METHOD-OVERLOADS--------------------------------------------------
 
+    def test_str(self):
+
+        test_data = [
+            # init args/
+            # /string
+            ((4,    ('i', '2i'),        ('2i', 'i'),    3,      3       ),
+             'CVN(3|2i, i|<-{}|4|{}->|2i, i|3)'),
+
+            (('2n', ('i', '2j', '3i'),  ('2i', 'j'),    '2k',   '2k + 1'),
+             'CVN(2k|3i, 2j, i|<-{}|2n|{}->|2i, j|2k + 1)'),
+
+            ((4,    ('i',),             ('2i', 'i')),
+             'CVN(inf|i|<-{}|4|{}->|2i, i|inf)'),
+
+        ]
+
+        for info in test_data:
+            pattern = CentralVertexNumbering(*info[0])
+            self.assertEqual(str(pattern), info[1].format('i', 'i'))
+
+            args = list(info[0])
+            args[1] = NTermRecursionSequence(*info[0][1], ntuple_index='p')
+            args[2] = NTermRecursionSequence(*info[0][2], ntuple_index='q')
+            pattern = CentralVertexNumbering(*args)
+            self.assertEqual(str(pattern), info[1].format('p', 'q'))
+
     def test_eq(self):
 
         # equal

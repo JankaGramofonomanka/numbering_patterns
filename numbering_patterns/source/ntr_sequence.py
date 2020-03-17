@@ -51,7 +51,7 @@ class NTermRecursionSequence():
     #-MAGIC-METHOD-OVERLOADS--------------------------------------------------
 
     def __str__(self):
-        return f'{self.n}-TRSeq(' + self.formulas_str() + ')'
+        return f'{self.n}-TRSeq[{self.ntuple_index}]({self.formulas_str()})'
 
     def __eq__(self, other):
         return (self.n == other.n
@@ -97,17 +97,22 @@ class NTermRecursionSequence():
         """Returns a copy of the sequence"""
         return NTermRecursionSequence(self)
 
-    def formulas_str(self):
+    def formulas_str(self, reversed=False):
         """Returns a string with formulas that determine the sequence"""
         # for example if the formulas are 'i', '4i', '3i + 4n' then the
         # string will be "'i', '4i', '3i + 4n'"
 
         string = ''
 
-        for formula in self.formulas[0:-1]:
+        if reversed:
+            formulas = self.formulas[-1::-1]
+        else:
+            formulas = self.formulas[:]
+
+        for formula in formulas[0:-1]:
             string += f'{str(formula)}, '
 
-        string += str(self.formulas[-1])
+        string += str(formulas[-1])
 
         return string
 

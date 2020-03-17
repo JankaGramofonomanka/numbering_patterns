@@ -18,6 +18,7 @@ class Case():
             string += f'{variable} = {str(formula)}, '
 
         string = f'Case({string})'
+        return string
 
 
 

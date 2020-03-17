@@ -65,14 +65,17 @@ class TestNTRSequence(unittest.TestCase):
 
         test_data = [
             # init args                     string
-            (('a + b', '3i + 4', '4i'),     '3-TRSeq(a + b, 3i + 4, 4i)'),
-            (('i',),                        '1-TRSeq(i)'                ),
-            (('1', 'a'),                    '2-TRSeq(1, a)'             ),
+            (('a + b', '3i + 4', '4i'),     '3-TRSeq[{}](a + b, 3i + 4, 4i)'),
+            (('i',),                        '1-TRSeq[{}](i)'                ),
+            (('1', 'a'),                    '2-TRSeq[{}](1, a)'             ),
         ]
 
         for info in test_data:
             seq = NTermRecursionSequence(*info[0])
-            self.assertEqual(str(seq), info[1])
+            self.assertEqual(str(seq), info[1].format('i'))
+
+            seq = NTermRecursionSequence(*info[0], ntuple_index='j')
+            self.assertEqual(str(seq), info[1].format('j'))
 
     def test_eq(self):
 
@@ -175,15 +178,20 @@ class TestNTRSequence(unittest.TestCase):
     def test_formulas_str(self):
 
         test_data = [
-            # init args                     string
-            (('a + b', '3i + 4', '4i'),     'a + b, 3i + 4, 4i' ),
-            (('i',),                        'i'                 ),
-            (('1', 'a'),                    '1, a'              ),
+            # init args/
+            # /string                   reversed=True
+            (('a + b', '3i + 4', '4i'),
+             'a + b, 3i + 4, 4i',       '4i, 3i + 4, a + b'),
+            (('i',),
+             'i',                       'i'),
+            (('1', 'a'),
+             '1, a',                    'a, 1'),
         ]
 
         for info in test_data:
             seq = NTermRecursionSequence(*info[0])
             self.assertEqual(seq.formulas_str(), info[1])
+            self.assertEqual(seq.formulas_str(reversed=True), info[2])
 
     def test_evaluate(self):
 

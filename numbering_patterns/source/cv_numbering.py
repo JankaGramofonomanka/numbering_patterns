@@ -67,7 +67,15 @@ class CentralVertexNumbering():
         string += f'left: {self.left_seq.formulas_str()}, '
         string += f'right: {self.right_seq.formulas_str()}'
 
-        string = f'CVN({string})'
+        string = 'CVN({ll}|{ls}|<-{li}|{ct}|{ri}->|{rs}|{rl})'.format(
+            ll=str(self.left_len),
+            rl=str(self.right_len),
+            li=self.left_seq.ntuple_index,
+            ri=self.right_seq.ntuple_index,
+            ls=self.left_seq.formulas_str(reversed=True),
+            rs=self.right_seq.formulas_str(),
+            ct=str(self.center)
+        )
 
         return string
 
