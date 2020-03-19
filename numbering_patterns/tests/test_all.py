@@ -8,6 +8,8 @@ from test_lf_other import TestOther
 from test_ntr_sequence import TestNTRSequence
 from test_cv_numbering import TestCVN
 
+from test_case import TestCase, TestMyCase
+
 if __name__ == '__main__':
 
     unittest.main()
