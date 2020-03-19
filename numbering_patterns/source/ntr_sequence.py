@@ -70,11 +70,12 @@ class NTermRecursionSequence():
             self.formulas[i].zip(inplace=True)
 
     @misc.inplace(default=False)
-    def substitute(self, **kwargs):
+    def substitute(self, recursive=False, **kwargs):
         """Substitutes given variables for given formulas in all of the
         sequence's formulas"""
         for i in range(self.n):
-            self.formulas[i].substitute(**kwargs, inplace=True)
+            self.formulas[i].substitute(
+                **kwargs, recursive=recursive, inplace=True)
 
     #-------------------------------------------------------------------------
 

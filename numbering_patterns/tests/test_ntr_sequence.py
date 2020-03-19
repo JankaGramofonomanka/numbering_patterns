@@ -162,6 +162,31 @@ class TestNTRSequence(unittest.TestCase):
 
             self.assertEqual(seq.ntuple_index, ntuple_index)
 
+    def test_substitute_recursive(self):
+
+        test_data = [
+            # init formulas/    {variable: substitute}
+            # /result
+            (('a', 'b', 'c'),   {'a': 'b', 'b': 'c'},
+             ('c', 'c', 'c')                                    ),
+            (('a+b', 'b+a'),    {'a': 'b', 'b': 'c'},
+             ('2c', '2c')                                       ),
+            (('a+b', 'b+a+c'),  {'a': 'b', 'b': 'c'},
+             ('2c', '3c')                                       ),
+            (('a+b', 'b+a'),    {'a': 'c', 'b': 'c', 'c': 'd'},
+             ('2d', '2d')                                       ),
+            (('a+b',),          {'a': 'k+1', 'b': 'k-2'},
+             ('2k-1',)                                          ),
+            (('a', 'a+2', 'b'), {'c': 'd', 'b': 'c', 'a': 'b'},
+             ('d', 'd+2', 'd')                                  ),
+        ]
+
+        for info in test_data:
+            seq = NTermRecursionSequence(*info[0])
+            seq.substitute(**info[1], recursive=True, inplace=True)
+
+            self.assertEqual(seq.zip(), NTermRecursionSequence(*info[2]).zip())
+
     #-------------------------------------------------------------------------
 
 

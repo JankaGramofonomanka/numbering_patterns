@@ -58,6 +58,13 @@ class MyCase(Case):
         string += f'\nlower pattern:{str(self.lower_pattern)}'
         return string
 
+    def substitute_recursive(self):
+
+        self.upper_pattern.substitute(
+            **self.variables, recursive=True, inplace=True)
+        self.lower_pattern.substitute(
+            **self.variables, recursive=True, inplace=True)
+
 
 
 

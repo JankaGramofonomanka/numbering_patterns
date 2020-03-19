@@ -133,6 +133,38 @@ class TestModifiers(unittest.TestCase):
             self.assertEqual(str(formula_2), info[2])
 
     #-------------------------------------------------------------------------
+    def test_substitute_recursive(self):
+
+        test_data = [
+            # init formula                                  result
+            #       {variable: substitute}
+            ('a',   {'a': 'b', 'b': 'c'},                   'c'     ),
+            ('a+b', {'a': 'b', 'b': 'c'},                   '2c'    ),
+            ('a+b', {'a': 'c', 'b': 'c', 'c': 'd'},         '2d'    ),
+            ('a+b', {'a': 'k+1', 'b': 'k-2'},               '2k-1'  ),
+            ('a+b', {'a': 'k+1', 'b': 'k-2', 'k': '3t+1'},  '6t+1'  ),
+            ('a+b', {'k': 'a', 't': 'b'},                   'a+b'   ),
+            ('a',   {'c': 'd', 'b': 'c', 'a': 'b'},         'd'     ),
+        ]
+
+        for info in test_data:
+            formula = LinearFormula(info[0])
+            formula.substitute(**info[1], recursive=True, inplace=True)
+
+            self.assertEqual(formula.zip(), LinearFormula(info[2]).zip())
+
+        # errors, (to do)
+        test_data = [
+            # ('a+b', {'a': 'c', 'b': 'c', 'c': 'a'}),
+            # ('a+b', {'a': 'b', 'b': 'a'}          ),
+        ]
+
+        for info in test_data:
+            formula = LinearFormula(info[0])
+            self.assertRaises(ValueError, formula.substitute, **info[2])
+
+
+    #-------------------------------------------------------------------------
     def test_zip(self):
 
         test_data = [

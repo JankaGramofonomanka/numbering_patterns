@@ -74,3 +74,36 @@ class TestMyCase(unittest.TestCase):
                 lower_pattern.set_lengths(info[3], info[4]),
                 **info[5]
             )
+
+
+    def test_substitute_recursive(self):
+
+        test_data = [
+            # variables/
+            # /init upper CVN/
+            # /init lower CVN/
+            # /expected upper CVN/
+            # /expected lower CVN
+            ({'a': 'b', 'b': 'd', 'c': 'd', 'n': '4d+g+h+2'},
+             ('a',      ('b',   'c'),   ('d',   'a'),   'b',    'c'     ),
+             ('a+b',    ('b+c', 'c+d'), ('d+e', 'a+f'), 'b+g',  'c+h'   ),
+             ('d',      ('d',   'd'),   ('d',   'd'),   'd',    'd'     ),
+             ('2d',     ('2d',  '2d'),  ('d+e', 'd+f'), 'd+g',  'd+h'   )),
+        ]
+
+        for info in test_data:
+            upper_pattern = CentralVertexNumbering(*info[1])
+            lower_pattern = CentralVertexNumbering(*info[2])
+            case = MyCase(
+                **info[0],
+                upper_pattern=upper_pattern,
+                lower_pattern=lower_pattern
+            )
+            upper_pattern = CentralVertexNumbering(*info[3])
+            lower_pattern = CentralVertexNumbering(*info[4])
+
+            case.substitute_recursive()
+
+            self.assertEqual(case.upper_pattern.zip(), upper_pattern.zip())
+            self.assertEqual(case.lower_pattern.zip(), lower_pattern.zip())
+

@@ -387,8 +387,17 @@ class LinearFormula():
         del self.variables[index]
 
     @misc.inplace(default=False)
-    def substitute(self, **kwargs):
+    def substitute(self, recursive=False, **kwargs):
         """Substitutes given variables for given formulas"""
+        # <kwargs> should look like this {variable: formula}
+
+        if recursive:
+            self._substitute_recursive(**kwargs)
+        else:
+            self._substitute_non_recursive(**kwargs)
+
+    def _substitute_non_recursive(self, **kwargs):
+        """Substitutes given variables for given formulas once"""
         # <kwargs> should look like this {variable: formula}
 
         # assign integers to variables
@@ -408,6 +417,22 @@ class LinearFormula():
         # substitute the integers with desired formulas
         for variable, formula in kwargs.items():
             self._substitute_one_variable(variable_ints[variable], formula)
+
+    def _substitute_recursive(self, **kwargs):
+        """Substitutes given variables for given formulas recursively"""
+        # that means if, for example, we want to substitute recursively
+        # 'a' for 'b' and 'b' for 'c' in the formula 'a', we will get 'c'
+        # instead of 'b'
+
+        while set(kwargs) & self.get_variables() != set():
+            for variable, formula in kwargs.items():
+
+                # this will avoid issues when <formula> contains <variable>
+                for i in range(len(self)):
+                    if self.variables[i] == variable:
+                        self.variables[i] = -1
+
+                self._substitute_one_variable(-1, formula)
 
     @misc.convert_to_type('owners type', arg_index=1)
     def _substitute_one_variable(self, variable, formula):

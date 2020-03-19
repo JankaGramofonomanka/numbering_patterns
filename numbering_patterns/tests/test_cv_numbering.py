@@ -271,6 +271,42 @@ class TestCVN(unittest.TestCase):
             seq = CentralVertexNumbering(*args)
             self.assertRaises(ValueError, seq.substitute, **info[0])
 
+    def test_substitute_recursive(self):
+
+        test_data = [
+            # {variable: substitute}/
+            # /init formulas/
+            # /result
+            ({'a': 'b', 'b': 'c'},
+             ('a', ('a', 'b', 'c'), ('c', 'a', 'b'), 'b', 'c'),
+             ('c', ('c', 'c', 'c'), ('c', 'c', 'c'), 'c', 'c')),
+
+            ({'a': 'b', 'b': 'c'},
+             ('a', ('a+b', 'b+a'),  ('2a+b', '2b+a'),   'a-b',  'a-2b'),
+             ('c', ('2c', '2c'),    ('3c', '3c'),       '0',    '-c')),
+
+            ({'a': 'c', 'b': 'c', 'c': 'd'},
+             ('a', ('a+b', 'b+a'),  ('2a+b', '2b+a'),   'a-b',  'a-2b'),
+             ('d', ('2d', '2d'),    ('3d', '3d'),       '0',    '-d')),
+
+            ({'a': 'c', 'b': 'c', 'c': 'd'},
+             ('a', ('a+b', 'b+a'),  ('2a+b', '2b+a')),
+             ('d', ('2d', '2d'),    ('3d', '3d'))),
+
+            ({'n': 'k', 'k': 't', 't': 1},
+             ('2n', ('i', '2i+k'),  ('2n', 'n+2'),  'k',    'k+1'),
+             (2,    ('i', '2i+1'),  (2, 3),         1,      2)),
+        ]
+
+        for info in test_data:
+            pattern = CentralVertexNumbering(*info[1])
+            pattern.substitute(**info[0], recursive=True, inplace=True)
+            pattern.zip(inplace=True)
+
+            expected = CentralVertexNumbering(*info[2]).zip()
+
+            self.assertEqual(pattern, expected)
+
     def test_reverse(self):
 
         test_data = [

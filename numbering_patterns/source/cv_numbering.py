@@ -136,13 +136,15 @@ class CentralVertexNumbering():
         self.right_len.zip(inplace=True)
 
     @misc.inplace(default=False)
-    def substitute(self, only_sequences=False, **kwargs):
+    def substitute(self, only_sequences=False, recursive=False, **kwargs):
         """Substitutes given variables for given formulas in all formulas
         determining the pattern"""
 
         if only_sequences == True:
-            self.left_seq.substitute(**kwargs, inplace=True)
-            self.right_seq.substitute(**kwargs, inplace=True)
+            self.left_seq.substitute(
+                **kwargs, recursive=recursive, inplace=True)
+            self.right_seq.substitute(
+                **kwargs, recursive=recursive, inplace=True)
 
         else:
             # check if the substitute formulas use one of the <ntuple_index>
@@ -158,11 +160,16 @@ class CentralVertexNumbering():
                         + " ntuple_index variable,"
                         + " use the keyword argument: only_sequences=True")
 
-            self.center.substitute(**kwargs, inplace=True)
-            self.left_seq.substitute(**kwargs, inplace=True)
-            self.right_seq.substitute(**kwargs, inplace=True)
-            self.left_len.substitute(**kwargs, inplace=True)
-            self.right_len.substitute(**kwargs, inplace=True)
+            self.center.substitute(
+                **kwargs, recursive=recursive, inplace=True)
+            self.left_seq.substitute(
+                **kwargs, recursive=recursive, inplace=True)
+            self.right_seq.substitute(
+                **kwargs, recursive=recursive, inplace=True)
+            self.left_len.substitute(
+                **kwargs, recursive=recursive, inplace=True)
+            self.right_len.substitute(
+                **kwargs, recursive=recursive, inplace=True)
 
     @misc.inplace(default=False)
     def reverse(self):
