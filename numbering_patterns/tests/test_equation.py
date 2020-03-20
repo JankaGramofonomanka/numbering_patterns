@@ -389,9 +389,22 @@ class TestLinearEquation(unittest.TestCase):
             self.assertEqual(eq.get_variables(), info[1])
             self.assertEqual(eq.get_variables(omit_zeros=True), info[2])
 
+    def test_status(self):
 
+        test_data = [
+            # equation      status
+            ('a == b',      'unknown'),
+            ('a == a',      'true'),
+            ('0 == 1',      'false'),
+            ('a == a+1',    'false'),
+            ('2a == a+a',   'true'),
+            ('a-b == a-b',  'true'),
+            ('a+b == a+2b', 'unknown'),
+        ]
 
-
+        for info in test_data:
+            eq = LinearEquation(info[0])
+            self.assertEqual(eq.status(), info[1])
 
 
 

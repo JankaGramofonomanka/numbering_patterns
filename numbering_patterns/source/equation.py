@@ -199,7 +199,17 @@ class LinearEquation():
     def status(self, **kwargs):
         """Returns the logical status of the equation
         (true, false or unknown)"""
-        pass
+
+        solved_eq = self.solve()
+        if solved_eq.get_variables() != set():
+            return 'unknown'
+
+        should_be_zero = solved_eq.left.evaluate()
+        if should_be_zero != 0:
+            return 'false'
+
+        elif should_be_zero == 0:
+            return 'true'
 
     # -------------------------------------------------------------------------
 
