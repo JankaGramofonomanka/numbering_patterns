@@ -81,9 +81,13 @@ length ==> last_vertex_number % 3 = 0 (case_1)
 
 but first do Equation
 
-#----------------------------------------------------------------------------
+#-DONE-I-THINK---------------------------------------------------------------
 LinearFormula('') == LinearFormula('0')
 
+#-DONE-I-THINK---------------------------------------------------------------
+make sure that multipliers are only integers
 
+#---------------------------------------------------------------------------
+clean up tests for LinearFormula
 
 

@@ -4,7 +4,11 @@ from numbering_patterns.source.linear_formula import LinearFormula
 class TestMagicMethods(unittest.TestCase):
 
     #-TEST-MAGIC-METHODS------------------------------------------------------
-    
+
+    def assert_multipliers_are_integers(self, formula):
+        for num in formula.multipliers:
+            self.assertEqual(type(num), int)
+
     #-------------------------------------------------------------------------
     def test_str(self):
 
@@ -37,20 +41,22 @@ class TestMagicMethods(unittest.TestCase):
             formula_1 = LinearFormula(info[0], info[1])
             formula_2 = LinearFormula(info[0], info[1])
             self.assertEqual(formula_1 == formula_2, True)
+
+        self.assertEqual(LinearFormula([], []), LinearFormula([0], ['']))
         
         test_data = [
             # init multipliers  init variables
             (([1, 3, -4],       ['a', 'b', 'c'] ),      # formula 1
-             ([2, 5, -7],       ['e', 'f', 'g'] )   ),  # formula 2
+             ([2, 5, -7],       ['e', 'f', 'g'] )),     # formula 2
 
             (([1, 1],           ['a', 'b']      ),      # formula 1
-             ([1, 1],           ['b', 'a']      )   ),  # formula 2
+             ([1, 1],           ['b', 'a']      )),     # formula 2
             
             (([1, 4, 2],        ['a', 'b', 'a'] ),      # formula 1
-             ([3, 4],           ['b', 'a']      )   ),  # formula 2
+             ([3, 4],           ['b', 'a']      )),     # formula 2
             
             (([1, 2],           ['', '']        ),      # formula 1
-             ([2, 1],           ['', '']        )   ),  # formula 2
+             ([2, 1],           ['', '']        )),     # formula 2
         ]
 
         for info in test_data:
@@ -78,6 +84,7 @@ class TestMagicMethods(unittest.TestCase):
             formula_1 = LinearFormula(info[0])
             formula_2 = LinearFormula(info[1])
             self.assertEqual(-formula_1, formula_2)
+            self.assert_multipliers_are_integers(-formula_1)
         
         test_data = [
             #formula                not equal to -formula
@@ -121,29 +128,37 @@ class TestMagicMethods(unittest.TestCase):
             # LinearFormula +- LinearFormula
             self.assertEqual(formula_1 + formula_2, sum)
             self.assertEqual(formula_1 - formula_2, difference)
+            self.assert_multipliers_are_integers(formula_1 + formula_2)
+            self.assert_multipliers_are_integers(formula_1 - formula_2)
             # LinearFormula +- str (int)
             self.assertEqual(formula_1 + info[1], sum)
             self.assertEqual(formula_1 - info[1], difference)
+            self.assert_multipliers_are_integers(formula_1 + info[1])
+            self.assert_multipliers_are_integers(formula_1 - info[1])
 
             # += LinearFormula
             formula_1 = LinearFormula(info[0])
             formula_1 += formula_2
             self.assertEqual(formula_1, sum)
+            self.assert_multipliers_are_integers(formula_1)
 
             # -= LinearFormula
             formula_1 = LinearFormula(info[0])
             formula_1 -= formula_2
             self.assertEqual(formula_1, difference)
+            self.assert_multipliers_are_integers(formula_1)
 
             # += str (int)
             formula_1 = LinearFormula(info[0])
             formula_1 += info[1]
             self.assertEqual(formula_1, sum)
+            self.assert_multipliers_are_integers(formula_1)
 
             # -= str (int)
             formula_1 = LinearFormula(info[0])
             formula_1 -= info[1]
             self.assertEqual(formula_1, difference)
+            self.assert_multipliers_are_integers(formula_1)
 
         # wrong results
         test_data = [
@@ -238,9 +253,12 @@ class TestMagicMethods(unittest.TestCase):
             # *
             self.assertEqual(formula * info[1], expected)
             self.assertEqual(info[1] * formula, expected)
+            self.assert_multipliers_are_integers(formula * info[1])
+            self.assert_multipliers_are_integers(info[1] * formula)
             # *=
             formula *= info[1]
             self.assertEqual(formula, expected)
+            self.assert_multipliers_are_integers(formula)
         
         # errors
         test_data = [
@@ -285,9 +303,11 @@ class TestMagicMethods(unittest.TestCase):
             expected = LinearFormula(info[2])
             # /
             self.assertEqual(formula / info[1], expected)
+            self.assert_multipliers_are_integers(formula / info[1])
             # /=
             formula /= info[1]
             self.assertEqual(formula, expected)
+            self.assert_multipliers_are_integers(formula)
 
         # errors
         test_data = [
@@ -332,9 +352,11 @@ class TestMagicMethods(unittest.TestCase):
             expected = LinearFormula(info[2])
             # //
             self.assertEqual(formula // info[1], expected)
+            self.assert_multipliers_are_integers(formula // info[1])
             # //=
             formula //= info[1]
             self.assertEqual(formula, expected)
+            self.assert_multipliers_are_integers(formula)
 
         # errors
         test_data = [
@@ -377,9 +399,11 @@ class TestMagicMethods(unittest.TestCase):
             expected = LinearFormula(info[2])
             # %
             self.assertEqual(formula % info[1], expected)
+            self.assert_multipliers_are_integers(formula % info[1])
             # %=
             formula %= info[1]
             self.assertEqual(formula, expected)
+            self.assert_multipliers_are_integers(formula)
 
         # errors
         test_data = [

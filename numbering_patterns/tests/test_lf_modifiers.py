@@ -7,8 +7,6 @@ class TestModifiers(unittest.TestCase):
     
     #-------------------------------------------------------------------------
     def test_inplace(self):
-        #formula = LinearFormula('a + 3b - 4c + 3a')
-        #control_formula = LinearFormula('a + 3b - 4c + 3a')
 
         test_data = [
             (LinearFormula.add_segment,     [3, 'f']                        ),
@@ -44,8 +42,8 @@ class TestModifiers(unittest.TestCase):
             #formula             variable
             ('a + 3b - 4c', (3,  'g'),   'a + 3b - 4c + 3g'  ),
             ('a + 3b - 4c', (-3, 'g'),   'a + 3b - 4c - 3g'  ),
-            ('',            (3,  'g'),   '3g'                ),
-            ('',            (-3, 'g'),   '-3g'               ),
+            ('0',           (3,  'g'),   '0 + 3g'            ),
+            ('0',           (-3, 'g'),   '0 - 3g'            ),
         ]
 
         for info in test_data:
@@ -66,7 +64,7 @@ class TestModifiers(unittest.TestCase):
             ('a + 3b - 4c',     (-5, 'g', 0),   '-5g + a + 3b - 4c' ),
             ('-a + 3b - 4c',    (5,  'g', 0),   '5g - a + 3b - 4c'  ),
             ('a + 3b - 4c',     (-5, 'g', 3),   'a + 3b - 4c - 5g'  ),
-            ('',                (3,  'g', 0),   '3g'                ),
+            ('0',               (3,  'g', 0),   '3g + 0'            ),
             #('',                (3,  'g', 1),   'err'               ),
         ]   
 
@@ -83,6 +81,7 @@ class TestModifiers(unittest.TestCase):
             #                   index
             ('a + 3b - 4c',     1,      'a - 4c'),
             ('a + 3b - 4c',     2,      'a + 3b'),
+            ('a',               0,      '0'     ),
         ]
 
         for info in test_data:

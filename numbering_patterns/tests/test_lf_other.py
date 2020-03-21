@@ -16,7 +16,7 @@ class TestOther(unittest.TestCase):
             ('a + 3b - 4c + 3a',        4),
             ('a + 7b - 0c - 4d + 1',    5),
             ('-a + 4c',                 2),
-            ('',                        0),
+            ('',                        1),
             ('a',                       1),
             ('6',                       1),
             ('ab + 3cd - 34ef',         3),

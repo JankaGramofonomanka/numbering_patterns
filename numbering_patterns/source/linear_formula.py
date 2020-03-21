@@ -59,6 +59,15 @@ class LinearFormula():
         else:
             raise TypeError('the constructor takes at most 2 arguments')
 
+        self._assert_not_empty()
+
+    def _assert_not_empty(self):
+        """make sure the lists aren't empty"""
+
+        if len(self.multipliers) == 0 or len(self.variables) == 0:
+            self.multipliers = [0]
+            self.variables = ['']
+
     #-------------------------------------------------------------------------
 
 
@@ -292,7 +301,7 @@ class LinearFormula():
     @misc.convert_to_type(int, operator=True)    
     def __itruediv__(self, other):
         for i in range(self.length()):
-            self.multipliers[i] /= other
+            self.multipliers[i] = int(self.multipliers[i] / other)
         
         return self
     
@@ -493,6 +502,8 @@ class LinearFormula():
                             inplace=True
                             )
                     break
+
+        self._assert_not_empty()
 
     @misc.inplace(default=False)
     def modulo(self, n):
