@@ -17,34 +17,53 @@ class TestLinearEquation(unittest.TestCase):
             ('a',           'b'             ),
         ]
 
-        for args in test_data:
-            eq = LinearEquation(*args)
-            left = LinearFormula(args[0])
-            right = LinearFormula(args[1])
-            self.assertEqual(eq.left, left)
-            self.assertEqual(eq.right, right)
+        for info in test_data:
+            if len(info) == 2:
+                relation = '=='
+                kwargs = {}
+            else:
+                relation = info[2]
+                kwargs = {'relation': info[2]}
 
-            eq = LinearEquation(left, right)
-            self.assertEqual(eq.left, left)
-            self.assertEqual(eq.right, right)
+            args = (info[0], info[1])
+
+            rel = LinearEquation(*args, **kwargs)
+            left = LinearFormula(info[0])
+            right = LinearFormula(info[1])
+
+            self.assertEqual(rel.left, left)
+            self.assertEqual(rel.right, right)
+            self.assertEqual(rel.relation, relation)
+
+            rel = LinearEquation(left, right)
+            self.assertEqual(rel.left, left)
+            self.assertEqual(rel.right, right)
+            self.assertEqual(rel.relation, relation)
 
     def test_init_with_string(self):
 
         # init with string
         test_data = [
-            # init string               left        right
-            ('a+b-3c = -b+a+c-4c+2b',   'a+b-3c',   '-b+a+c-4c+2b'  ),
-            ('a = b',                   'a',        'b'             ),
-            ('a == b',                  'a',        'b'             ),
-            ('a + b - 3c == 2c',        'a+b-3c',   '2c'            ),
+            # init string               left        right           relation
+            ('a+b-3c = -b+a+c-4c+2b',   'a+b-3c',   '-b+a+c-4c+2b', '=='),
+            ('a = b',                   'a',        'b',            '=='),
+            ('a == b',                  'a',        'b',            '=='),
+            ('a + b - 3c == 2c',        'a+b-3c',   '2c',           '=='),
+            ('a + b - 3c <= 2c',        'a+b-3c',   '2c',           '<='),
+            ('a + b - 3c >= 2c',        'a+b-3c',   '2c',           '>='),
+            ('a + b - 3c < 2c',         'a+b-3c',   '2c',           '<' ),
+            ('a + b - 3c > 2c',         'a+b-3c',   '2c',           '>' ),
         ]
 
         for info in test_data:
-            eq = LinearEquation(info[0])
+            rel = LinearEquation(info[0])
             left = LinearFormula(info[1])
             right = LinearFormula(info[2])
-            self.assertEqual(eq.left, left)
-            self.assertEqual(eq.right, right)
+            relation = info[3]
+
+            self.assertEqual(rel.left, left)
+            self.assertEqual(rel.right, right)
+            self.assertEqual(rel.relation, relation)
 
     #-------------------------------------------------------------------------
 
@@ -54,43 +73,59 @@ class TestLinearEquation(unittest.TestCase):
     def test_str(self):
 
         test_data = [
-            # left      right           string
-            ('a+b-3c',  '-b+a+c-4c+2b', 'a + b - 3c == -b + a + c - 4c + 2b'),
-            ('a',       'b',            'a == b'                            ),
+            # left      right       relation    string
+            ('a+b-3c',  '-b+a+c',   '==',       'a + b - 3c == -b + a + c'),
+            ('a',       'b',        '==',       'a == b'),
+            ('a',       'b',        '<=',       'a <= b'),
+            ('a',       'b',        '>=',       'a >= b'),
+            ('a',       'b',        '<',        'a < b'),
+            ('a',       'b',        '>',        'a > b'),
         ]
 
         for info in test_data:
-            eq = LinearEquation(info[0], info[1])
-            self.assertEqual(str(eq), info[2])
+            rel = LinearEquation(info[0], info[1], relation=info[2])
+            self.assertEqual(str(rel), info[3])
 
     def test_eq(self):
 
         test_data = [
             'a + b == a + b',
             'c + d == 2c',
+            'c + d <= 2c',
+            'c + d >= 2c',
+            'c + d < 2c',
+            'c + d > 2c',
         ]
 
         for args in test_data:
-            eq_1 = LinearEquation(args)
-            eq_2 = LinearEquation(args)
-            self.assertEqual(eq_1, eq_2)
+            rel_1 = LinearEquation(args)
+            rel_2 = LinearEquation(args)
+            self.assertEqual(rel_1, rel_2)
 
         # not equal
         test_data = [
             # equation 1        equation 2
             ('a + b == c + d',  'a + b - c == d'),
             ('a + b == a + b',  'a + b - a - b == 0'),
-            ('a + b == a + b',  'a + b - a - b == '),
             ('a + b == a + b',  'b - b == 0'),
-            ('a + b == a + b',  'b - b == '),
             ('a + b == 2a',     'b - a == 0'),
-            ('a + b == 2a',     'b - a == '),
+            ('a + b == 2a',     'a + b <= 2a'),
+            ('a + b <= 2a',     'a + b == 2a'),
+            ('a + b >= 2a',     'a + b == 2a'),
+            ('a + b == 2a',     'a + b < 2a'),
+            ('a + b == 2a',     'a + b > 2a'),
+            ('a + b > 2a',      'a + b == 2a'),
+            ('a + b <= 2a',     'a + b >= 2a'),
+            ('a + b >= 2a',     'a + b <= 2a'),
+            ('a + b <= 2a',     'a + b < 2a'),
+            ('a + b > 2a',      'a + b >= 2a'),
+
         ]
 
         for info in test_data:
-            eq_1 = LinearEquation(info[0])
-            eq_2 = LinearEquation(info[1])
-            self.assertNotEqual(eq_1, eq_2)
+            rel_1 = LinearEquation(info[0])
+            rel_2 = LinearEquation(info[1])
+            self.assertNotEqual(rel_1, rel_2)
 
     def test_neg(self):
 
@@ -99,12 +134,16 @@ class TestLinearEquation(unittest.TestCase):
             ('a + b == a + b',  '-a - b == -a + -b'),
             ('c + d == 2c',     '-c - d == -2c'),
             ('a + b == a - b',  '-a - b == -a + b'),
+            ('a + b <= a - b',  '-a - b >= -a + b'),
+            ('a + b >= a - b',  '-a - b <= -a + b'),
+            ('a + b < a - b',   '-a - b > -a + b'),
+            ('a + b > a - b',   '-a - b < -a + b'),
         ]
 
         for info in test_data:
-            eq = LinearEquation(info[0])
-            minus_eq = LinearEquation(info[1])
-            self.assertEqual(-eq, minus_eq)
+            rel = LinearEquation(info[0])
+            minus_rel = LinearEquation(info[1])
+            self.assertEqual(-rel, minus_rel)
 
     def test_add_sub_number(self):
 
@@ -120,36 +159,53 @@ class TestLinearEquation(unittest.TestCase):
              'a + b + e == a + b + e',
              'a + b - e == a + b - e'),
 
-            ('a + b == a + b',          1,
-             'a + b + 1 == a + b + 1',
-             'a + b - 1 == a + b - 1'),
+            ('a + b > a + b',          1,
+             'a + b + 1 > a + b + 1',
+             'a + b - 1 > a + b - 1'),
 
             ('a + b == a + b',          LinearFormula('a + 3b'),
              'a + b + a + 3b == a + b + a + 3b',
              'a + b - a - 3b == a + b - a - 3b'),
 
-            ('a + b == a + b',           'a + 3b',
-             'a + b + a + 3b == a + b + a + 3b',
-             'a + b - a - 3b == a + b - a - 3b'),
+            ('a + b <= a + b',           'a + 3b',
+             'a + b + a + 3b <= a + b + a + 3b',
+             'a + b - a - 3b <= a + b - a - 3b'),
+
+            ('a + b <= c + d',          '2c',
+             'a + b + 2c <= c + d + 2c',
+             'a + b - 2c <= c + d - 2c'),
+
+            ('a + b >= c + d',          '2c',
+             'a + b + 2c >= c + d + 2c',
+             'a + b - 2c >= c + d - 2c'),
+
+            ('a + b < c + d',           '2c',
+             'a + b + 2c < c + d + 2c',
+             'a + b - 2c < c + d - 2c'),
+
+            ('a + b > c + d',           '2c',
+             'a + b + 2c > c + d + 2c',
+             'a + b - 2c > c + d - 2c'),
         ]
 
         for info in test_data:
-            eq = LinearEquation(info[0])
-            eq_plus = LinearEquation(info[2])
-            eq_minus = LinearEquation(info[3])
+            rel = LinearEquation(info[0])
+            rel_plus = LinearEquation(info[2])
+            rel_minus = LinearEquation(info[3])
 
-            self.assertEqual(eq + info[1], eq_plus)
-            self.assertEqual(eq - info[1], eq_minus)
+            self.assertEqual(rel + info[1], rel_plus)
+            self.assertEqual(rel - info[1], rel_minus)
 
-            eq += info[1]
-            self.assertEqual(eq, eq_plus)
+            rel += info[1]
+            self.assertEqual(rel, rel_plus)
 
-            eq = LinearEquation(info[0])
-            eq -= info[1]
-            self.assertEqual(eq, eq_minus)
+            rel = LinearEquation(info[0])
+            rel -= info[1]
+            self.assertEqual(rel, rel_minus)
 
     def test_add_sub_equation(self):
 
+        # TODO: add different relations
         test_data = [
             # equation 1        equation 2
             ('a == c',          'b == d',
@@ -159,33 +215,55 @@ class TestLinearEquation(unittest.TestCase):
             ('a == b',          'a == b',
              'a + a == b + b',
              'a - a == b - b'),
+
+            ('a <= b',          'a <= b',
+             'a + a <= b + b',
+             'a - a <= b - b'),
+
+            ('a >= b',          'a >= b',
+             'a + a >= b + b',
+             'a - a >= b - b'),
+
+            ('a < b',           'a < b',
+             'a + a < b + b',
+             'a - a < b - b'),
+
+            ('a > b',           'a > b',
+             'a + a > b + b',
+             'a - a > b - b'),
         ]
 
         for info in test_data:
-            eq_1 = LinearEquation(info[0])
-            eq_2 = LinearEquation(info[1])
-            eq_sum = LinearEquation(info[2])
-            eq_diff = LinearEquation(info[3])
+            rel_1 = LinearEquation(info[0])
+            rel_2 = LinearEquation(info[1])
+            rel_sum = LinearEquation(info[2])
+            rel_diff = LinearEquation(info[3])
 
-            self.assertEqual(eq_1 + eq_2, eq_sum)
-            self.assertEqual(eq_1 - eq_2, eq_diff)
+            self.assertEqual(rel_1 + rel_2, rel_sum)
+            self.assertEqual(rel_1 - rel_2, rel_diff)
 
-            eq_1 += eq_2
-            self.assertEqual(eq_1, eq_sum)
+            rel_1 += rel_2
+            self.assertEqual(rel_1, rel_sum)
 
-            eq_1 = LinearEquation(info[0])
-            eq_1 -= eq_2
-            self.assertEqual(eq_1, eq_diff)
+            rel_1 = LinearEquation(info[0])
+            rel_1 -= rel_2
+            self.assertEqual(rel_1, rel_diff)
 
     def test_mul(self):
 
         test_data = [
             # equation          num     equation * num
-            ('a + b == c + d',  '2',    '2a + 2b == 2c + 2d'),
-
-            ('a + b == a + b',  2,      '2a + 2b == 2a + 2b'),
-
-            ('a + b == a + b',  5,      '5a + 5b == 5a + 5b'),
+            ('a + b == c + d',  '2',    '2a + 2b == 2c + 2d'    ),
+            ('a + b == a + b',  2,      '2a + 2b == 2a + 2b'    ),
+            ('a + b == a + b',  5,      '5a + 5b == 5a + 5b'    ),
+            ('a + b <= c + d',  2,      '2a + 2b <= 2c + 2d'    ),
+            ('a + b >= c + d',  2,      '2a + 2b >= 2c + 2d'    ),
+            ('a + b < c + d',   2,      '2a + 2b < 2c + 2d'     ),
+            ('a + b > c + d',   2,      '2a + 2b > 2c + 2d'     ),
+            ('a + b <= c + d',  -2,     '-2a - 2b >= -2c - 2d'  ),
+            ('a + b >= c + d',  -2,     '-2a - 2b <= -2c - 2d'  ),
+            ('a + b < c + d',   -2,     '-2a - 2b > -2c - 2d'   ),
+            ('a + b > c + d',   -2,     '-2a - 2b < -2c - 2d'   ),
         ]
 
         for info in test_data:
@@ -199,11 +277,17 @@ class TestLinearEquation(unittest.TestCase):
     def test_truediv(self):
         test_data = [
             # equation                  num     equation / num
-            ('2a + 2b == 2c + 2d',      '2',    'a + b == c + d'),
-
-            ('2a + 4b == 6a + 8b',      2,      'a + 2b == 3a + 4b'),
-
-            ('3a + 6b == 9a + 12b',     3,      'a + 2b == 3a + 4b'),
+            ('2a + 2b == 2c + 2d',      '2',    'a + b == c + d'        ),
+            ('2a + 4b == 6a + 8b',      2,      'a + 2b == 3a + 4b'     ),
+            ('3a + 6b == 9a + 12b',     3,      'a + 2b == 3a + 4b'     ),
+            ('3a + 6b <= 9a + 12b',     3,      'a + 2b <= 3a + 4b'     ),
+            ('3a + 6b >= 9a + 12b',     3,      'a + 2b >= 3a + 4b'     ),
+            ('3a + 6b < 9a + 12b',      3,      'a + 2b < 3a + 4b'      ),
+            ('3a + 6b > 9a + 12b',      3,      'a + 2b > 3a + 4b'      ),
+            ('3a + 6b <= 9a + 12b',     -3,     '-a - 2b >= -3a - 4b'   ),
+            ('3a + 6b >= 9a + 12b',     -3,     '-a - 2b <= -3a - 4b'   ),
+            ('3a + 6b < 9a + 12b',      -3,     '-a - 2b > -3a - 4b'    ),
+            ('3a + 6b > 9a + 12b',      -3,     '-a - 2b < -3a - 4b'    ),
         ]
 
         for info in test_data:
@@ -253,6 +337,18 @@ class TestLinearEquation(unittest.TestCase):
 
             ('a + b == c + b',          {'a': '2a', 'b': 'd + 2'},
              '2a + d + 2 == c + d + 2'),
+
+            ('a + b <= b + 1',          {'a': 'b', 'b': 'c'},
+             'b + c <= c + 1'),
+
+            ('a + b >= b + 1',          {'a': 'b', 'b': 'c'},
+             'b + c >= c + 1'),
+
+            ('a + b < b + 1',           {'a': 'b', 'b': 'c'},
+             'b + c < c + 1'),
+
+            ('a + b > b + 1',           {'a': 'b', 'b': 'c'},
+             'b + c > c + 1'),
         ]
 
         for info in test_data:
@@ -277,6 +373,18 @@ class TestLinearEquation(unittest.TestCase):
 
             ('a + b == c + b',          {'c': 'd', 'b': 'c', 'a': 'b'},
              '2d == 2d'),
+
+            ('a + b <= b + a',          {'a': 'b', 'b': 'c'},
+             '2c <= 2c'),
+
+            ('a + b >= b + a',          {'a': 'b', 'b': 'c'},
+             '2c >= 2c'),
+
+            ('a + b < b + a',           {'a': 'b', 'b': 'c'},
+             '2c < 2c'),
+
+            ('a + b > b + a',           {'a': 'b', 'b': 'c'},
+             '2c > 2c'),
         ]
 
         for info in test_data:
@@ -289,11 +397,15 @@ class TestLinearEquation(unittest.TestCase):
 
         test_data = [
             # equation          zipped equation
-            ('a+a == a',        '2a == a'),
-            ('a == a',          'a == a'),
-            #('a-a == b+b',      '0 == 2b'),
-            ('a-a+1 == b+b',    '1 == 2b'),
-            ('a+b+a == b-a+b',  '2a+b == 2b-a'),
+            ('a+a == a',        '2a == a'       ),
+            ('a == a',          'a == a'        ),
+            #('a-a == b+b',      '0 == 2b'       ),
+            ('a-a+1 == b+b',    '1 == 2b'       ),
+            ('a+b+a == b-a+b',  '2a+b == 2b-a'  ),
+            ('a+b+a <= b-a+b',  '2a+b <= 2b-a'  ),
+            ('a+b+a >= b-a+b',  '2a+b >= 2b-a'  ),
+            ('a+b+a < b-a+b',   '2a+b < 2b-a'   ),
+            ('a+b+a > b-a+b',   '2a+b > 2b-a'   ),
         ]
 
         for info in test_data:
@@ -324,6 +436,10 @@ class TestLinearEquation(unittest.TestCase):
             ('a == b',      'b == a'),
             ('a+b == b-d',  'b-d == a+b'),
             ('a+b+c == b',  'b == a+b+c'),
+            ('a+b+c <= b',  'b >= a+b+c'),
+            ('a+b+c >= b',  'b <= a+b+c'),
+            ('a+b+c < b',   'b > a+b+c'),
+            ('a+b+c > b',   'b < a+b+c'),
         ]
 
         for info in test_data:
@@ -335,8 +451,12 @@ class TestLinearEquation(unittest.TestCase):
 
         test_data = [
             ('a+b == 2b-c', 'a-b+c == 0'),
-            ('a == b', 'a-b == 0'),
-            ('a-a==b', '-b == 0'),
+            ('a == b',      'a-b == 0'  ),
+            ('a-a==b',      '-b == 0'   ),
+            ('a+b <= 2b-c', 'a-b+c <= 0'),
+            ('a+b >= 2b-c', 'a-b+c >= 0'),
+            ('a+b < 2b-c',  'a-b+c < 0' ),
+            ('a+b > 2b-c',  'a-b+c > 0' ),
         ]
 
         for info in test_data:
@@ -350,6 +470,7 @@ class TestLinearEquation(unittest.TestCase):
 
     #-OTHER-------------------------------------------------------------------
 
+    # TODO: adjust to other relations
     def test_copy(self):
 
         eq = LinearEquation('a == b')
@@ -359,6 +480,7 @@ class TestLinearEquation(unittest.TestCase):
         copy_of_eq.left += 15
         self.assertNotEqual(eq, copy_of_eq)
 
+    # TODO: adjust to other relations
     def test_evaluate(self):
 
         test_data = [
@@ -373,6 +495,7 @@ class TestLinearEquation(unittest.TestCase):
             evaluation = LinearEquation(info[2])
             self.assertEqual(eq.evaluate(**info[1]), evaluation)
 
+    # TODO: adjust to other relations
     def test_get_variables(self):
 
         test_data = [
@@ -389,6 +512,7 @@ class TestLinearEquation(unittest.TestCase):
             self.assertEqual(eq.get_variables(), info[1])
             self.assertEqual(eq.get_variables(omit_zeros=True), info[2])
 
+    # TODO: adjust to other relations
     def test_status(self):
 
         test_data = [

@@ -5,25 +5,52 @@ from numbering_patterns.source import misc
 class LinearEquation():
     """A class to represent an equation of two linear formulas"""
 
+    _relations = ['==', '<=', '>=', '<', '>']
+    _relations_in_str = ['==', '<=', '>=', '<', '>', '=']
+    _reversed_rel = {
+        '==': '==',
+        '<=': '>=',
+        '>=': '<=',
+        '<': '>',
+        '>': '<'
+    }
+
     #-INIT--------------------------------------------------------------------
 
-    def __init__(self, *args):
+    def __init__(self, *args, relation=None):
 
-        # init with another equation
-        if len(args) == 1 and type(args[0]) == LinearEquation:
-            LinearEquation.__init__(self, args[0].left, args[0].right)
+        if relation is not None and relation not in LinearEquation._relations:
+            raise ValueError(f'{args[2]} is not a valid relation sign')
 
-        # init with string
-        elif len(args) == 1 and type(args[0]) == str:
-            self.read_from_string(args[0])
+        if len(args) == 1:
+
+            # init with another relation
+            if type(args[0]) == LinearEquation:
+                if relation is None:
+                    relation = args[0].relation
+
+                LinearEquation.__init__(
+                    self, args[0].left, args[0].right, relation)
+
+            # init with string
+            if type(args[0]) == str:
+                self.read_from_string(args[0])
+                if relation is not None:
+                    self.relation = relation
 
         # init with formulas
         elif len(args) == 2:
+
             self.left = LinearFormula(args[0])
             self.right = LinearFormula(args[1])
+            if relation is None:
+                relation = '=='
+
+            self.relation = relation
 
         else:
-            raise TypeError('the constructor takes at most 2 arguments')
+            raise TypeError(
+                'this constructor  takes at most 2 positional arguments')
 
     #-------------------------------------------------------------------------
 
@@ -36,17 +63,20 @@ class LinearEquation():
         if type(string) != str:
             raise TypeError('the argument is not a string')
 
-        formulas = string.split('==')
-        if len(formulas) > 2:
-            raise ValueError('the string describes multiple equations')
+        formulas = []
+        for relation in LinearEquation._relations_in_str:
+            formulas = string.split(relation)
+            if len(formulas) == 2:
+                if relation == '=':
+                    self.relation = '=='
+                else:
+                    self.relation = relation
 
-        elif len(formulas) == 1:
-            formulas = string.split('=')
-            if len(formulas) > 2:
-                raise ValueError('the string describes multiple equations')
+                break
 
-            elif len(formulas) == 1:
-                raise ValueError('the string does not describe an equation')
+        if len(formulas) != 2:
+            raise ValueError(
+                'the provided string cannot be converted to any relation')
 
         self.left = LinearFormula(formulas[0])
         self.right = LinearFormula(formulas[1])
@@ -57,16 +87,29 @@ class LinearEquation():
     #-MAGIC-METHOD-OVERLOADS--------------------------------------------------
 
     def __str__(self):
-        return f'{str(self.left)} == {str(self.right)}'
+        return f'{str(self.left)} {self.relation} {str(self.right)}'
 
     def __eq__(self, other):
-        return self.left == other.left and self.right == other.right
+        return (
+            self.left == other.left
+            and self.right == other.right
+            and self.relation == other.relation
+        )
 
     def __neg__(self):
-        return LinearEquation(-self.left, -self.right)
+        return LinearEquation(
+            -self.left, -self.right,
+            relation=LinearEquation._reversed_rel[self.relation]
+        )
+
 
     def __iadd__(self, other):
         if type(other) == LinearEquation:
+            if other.relation != self.relation:
+                # TODO: figure out which relation to chose
+                raise ValueError(
+                    "you can't add two relations of different types")
+
             self.left += other.left
             self.right += other.right
 
@@ -78,6 +121,11 @@ class LinearEquation():
 
     def __isub__(self, other):
         if type(other) == LinearEquation:
+            if other.relation != self.relation:
+                # TODO: figure out which relation to chose
+                raise ValueError(
+                    "you can't subtract two relations of different types")
+
             self.left -= other.left
             self.right -= other.right
 
@@ -87,17 +135,33 @@ class LinearEquation():
 
         return self
 
+    @misc.convert_to_type(int, operator=True)
     def __imul__(self, other):
         self.left *= other
         self.right *= other
+        if other < 0:
+            self.relation = LinearEquation._reversed_rel[self.relation]
+
         return self
 
+    @misc.convert_to_type(int, operator=True)
     def __itruediv__(self, other):
         self.left /= other
         self.right /= other
+        if other < 0:
+            self.relation = LinearEquation._reversed_rel[self.relation]
+
         return self
 
+
+    @misc.convert_to_type(int, operator=True)
     def __imod__(self, other):
+
+        # TODO: this is not ok:
+        if self.relation != '==':
+            raise TypeError(
+                'the % operation does not preserve inequality relations')
+
         self.left %= other
         self.right %= other
         return self
@@ -147,6 +211,11 @@ class LinearEquation():
         """Reduces the left and right sides of the equation to their simplest
         modulo <n> equivalent"""
 
+        # TODO: this is not ok:
+        if self.relation != '==':
+            raise TypeError(
+                'the % operation does not preserve inequality relations')
+
         self.left.modulo(n, inplace=True)
         self.right.modulo(n, inplace=True)
 
@@ -157,6 +226,8 @@ class LinearEquation():
         temp = self.left.copy()
         self.left = self.right.copy()
         self.right = temp
+
+        self.relation = LinearEquation._reversed_rel[self.relation]
 
     @misc.inplace(default=False)
     def solve(self):
@@ -174,11 +245,13 @@ class LinearEquation():
 
     #-OTHER-------------------------------------------------------------------
 
+    # TODO: adjust to other relations
     def copy(self):
         """Returns a copy of the equation"""
 
-        return LinearEquation(self.left, self.right)
+        return LinearEquation(self.left, self.right, relation=self.relation)
 
+    # TODO: adjust to other relations
     def evaluate(self, **kwargs):
         """Evaluates the sides of the equation, given the variable values"""
 
@@ -187,6 +260,7 @@ class LinearEquation():
         result.right = LinearFormula(result.right.evaluate(**kwargs))
         return result
 
+    # TODO: adjust to other relations
     def get_variables(self, omit_zeros=False):
         """Returns a set of variables used in the equation"""
 
@@ -195,7 +269,8 @@ class LinearEquation():
 
         return result
 
-    # TODO:
+
+    # TODO: adjust to other relations
     def status(self, **kwargs):
         """Returns the logical status of the equation
         (true, false or unknown)"""
