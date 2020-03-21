@@ -1,3 +1,7 @@
+from functools import reduce
+from math import gcd as old_gcd
+
+
 def inplace(**kwargs):
     try:
         kwargs['default']
@@ -18,6 +22,7 @@ def inplace(**kwargs):
         return real_func
 
     return decorator
+
 
 def assignment_to_binary(operator):
     def decorator(func):
@@ -45,6 +50,7 @@ def assignment_to_binary(operator):
     
         return binary_operation
     return decorator
+
 
 def convert_to_type(target_type, arg_index=0, operator=False):
     if operator == True:
@@ -77,3 +83,21 @@ def convert_to_type(target_type, arg_index=0, operator=False):
 
         return real_method
     return decorator
+
+
+def gcd(*args):
+    if len(args) == 0:
+        return 1
+
+    return reduce(old_gcd, args)
+
+
+
+
+
+
+
+
+
+
+

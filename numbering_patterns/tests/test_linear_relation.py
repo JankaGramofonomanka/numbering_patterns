@@ -450,13 +450,24 @@ class TestLinearRelation(unittest.TestCase):
     def test_solve(self):
 
         test_data = [
-            ('a+b == 2b-c', 'a-b+c == 0'),
-            ('a == b',      'a-b == 0'  ),
-            ('a-a==b',      '-b == 0'   ),
-            ('a+b <= 2b-c', 'a-b+c <= 0'),
-            ('a+b >= 2b-c', 'a-b+c >= 0'),
-            ('a+b < 2b-c',  'a-b+c < 0' ),
-            ('a+b > 2b-c',  'a-b+c > 0' ),
+            ('a+b == 2b-c',     'a-b+c == 0'),
+            ('a == b',          'a-b == 0'  ),
+            ('a-a == b',        'b == 0'    ),
+            ('a+b <= 2b-c',     'a-b+c <= 0'),
+            ('a+b >= 2b-c',     'a-b+c >= 0'),
+            ('a+b < 2b-c',      'a-b+c < 0' ),
+            ('a+b > 2b-c',      'a-b+c > 0' ),
+            ('a+a+a == 3b',     'a-b == 0'  ),
+            ('a+2a+3a == 9b',   '2a-3b == 0'),
+            ('a+2a+3a <= 9b',   '2a-3b <= 0'),
+            ('a+2a+3a >= 9b',   '2a-3b >= 0'),
+            ('a+2a+3a < 9b',    '2a-3b < 0' ),
+            ('a+2a+3a > 9b',    '2a-3b > 0' ),
+            ('a-a <= b',        'b >= 0'    ),
+            ('a-a >= b',        'b <= 0'    ),
+            ('a-a < b',         'b > 0'     ),
+            ('a-a > b',         'b < 0'     ),
+            ('a-a == 0',        '0 == 0'    ),
         ]
 
         for info in test_data:

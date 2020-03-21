@@ -234,11 +234,14 @@ class LinearRelation():
         """Reduces the equation to the simplest equation in the form
         'L == 0'"""
 
-        self.left -= self.right
-        self.right = LinearFormula(0)
-        self.left.zip(inplace=True)
+        self -= self.right
+        self.zip(inplace=True)
 
-        # TODO: find common divider
+        gcd = misc.gcd(*self.left.multipliers)
+        if gcd == 0:
+            gcd = 1
+
+        self /= gcd
 
     #-------------------------------------------------------------------------
 
@@ -275,15 +278,15 @@ class LinearRelation():
             return 'unknown'
 
         solved_left = solved_eq.left.evaluate()
-        if self.relation == '==':
+        if solved_eq.relation == '==':
             status = solved_left == 0
-        elif self.relation == '<=':
+        elif solved_eq.relation == '<=':
             status = solved_left <= 0
-        elif self.relation == '>=':
+        elif solved_eq.relation == '>=':
             status = solved_left >= 0
-        elif self.relation == '<':
+        elif solved_eq.relation == '<':
             status = solved_left < 0
-        elif self.relation == '>':
+        elif solved_eq.relation == '>':
             status = solved_left > 0
 
         if status == False:
