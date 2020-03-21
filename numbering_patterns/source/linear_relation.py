@@ -2,7 +2,7 @@ from numbering_patterns.source.linear_formula import LinearFormula
 from numbering_patterns.source import misc
 
 
-class LinearEquation():
+class LinearRelation():
     """A class to represent an equation of two linear formulas"""
 
     _relations = ['==', '<=', '>=', '<', '>']
@@ -19,17 +19,17 @@ class LinearEquation():
 
     def __init__(self, *args, relation=None):
 
-        if relation is not None and relation not in LinearEquation._relations:
+        if relation is not None and relation not in LinearRelation._relations:
             raise ValueError(f'{args[2]} is not a valid relation sign')
 
         if len(args) == 1:
 
             # init with another relation
-            if type(args[0]) == LinearEquation:
+            if type(args[0]) == LinearRelation:
                 if relation is None:
                     relation = args[0].relation
 
-                LinearEquation.__init__(
+                LinearRelation.__init__(
                     self, args[0].left, args[0].right, relation)
 
             # init with string
@@ -64,7 +64,7 @@ class LinearEquation():
             raise TypeError('the argument is not a string')
 
         formulas = []
-        for relation in LinearEquation._relations_in_str:
+        for relation in LinearRelation._relations_in_str:
             formulas = string.split(relation)
             if len(formulas) == 2:
                 if relation == '=':
@@ -97,14 +97,14 @@ class LinearEquation():
         )
 
     def __neg__(self):
-        return LinearEquation(
+        return LinearRelation(
             -self.left, -self.right,
-            relation=LinearEquation._reversed_rel[self.relation]
+            relation=LinearRelation._reversed_rel[self.relation]
         )
 
 
     def __iadd__(self, other):
-        if type(other) == LinearEquation:
+        if type(other) == LinearRelation:
             if other.relation != self.relation:
                 # TODO: figure out which relation to chose
                 raise ValueError(
@@ -120,7 +120,7 @@ class LinearEquation():
         return self
 
     def __isub__(self, other):
-        if type(other) == LinearEquation:
+        if type(other) == LinearRelation:
             if other.relation != self.relation:
                 # TODO: figure out which relation to chose
                 raise ValueError(
@@ -140,7 +140,7 @@ class LinearEquation():
         self.left *= other
         self.right *= other
         if other < 0:
-            self.relation = LinearEquation._reversed_rel[self.relation]
+            self.relation = LinearRelation._reversed_rel[self.relation]
 
         return self
 
@@ -149,7 +149,7 @@ class LinearEquation():
         self.left /= other
         self.right /= other
         if other < 0:
-            self.relation = LinearEquation._reversed_rel[self.relation]
+            self.relation = LinearRelation._reversed_rel[self.relation]
 
         return self
 
@@ -227,7 +227,7 @@ class LinearEquation():
         self.left = self.right.copy()
         self.right = temp
 
-        self.relation = LinearEquation._reversed_rel[self.relation]
+        self.relation = LinearRelation._reversed_rel[self.relation]
 
     @misc.inplace(default=False)
     def solve(self):
@@ -245,13 +245,11 @@ class LinearEquation():
 
     #-OTHER-------------------------------------------------------------------
 
-    # TODO: adjust to other relations
     def copy(self):
         """Returns a copy of the equation"""
 
-        return LinearEquation(self.left, self.right, relation=self.relation)
+        return LinearRelation(self.left, self.right, relation=self.relation)
 
-    # TODO: adjust to other relations
     def evaluate(self, **kwargs):
         """Evaluates the sides of the equation, given the variable values"""
 
@@ -260,7 +258,6 @@ class LinearEquation():
         result.right = LinearFormula(result.right.evaluate(**kwargs))
         return result
 
-    # TODO: adjust to other relations
     def get_variables(self, omit_zeros=False):
         """Returns a set of variables used in the equation"""
 
@@ -269,8 +266,6 @@ class LinearEquation():
 
         return result
 
-
-    # TODO: adjust to other relations
     def status(self, **kwargs):
         """Returns the logical status of the equation
         (true, false or unknown)"""
@@ -279,11 +274,22 @@ class LinearEquation():
         if solved_eq.get_variables() != set():
             return 'unknown'
 
-        should_be_zero = solved_eq.left.evaluate()
-        if should_be_zero != 0:
+        solved_left = solved_eq.left.evaluate()
+        if self.relation == '==':
+            status = solved_left == 0
+        elif self.relation == '<=':
+            status = solved_left <= 0
+        elif self.relation == '>=':
+            status = solved_left >= 0
+        elif self.relation == '<':
+            status = solved_left < 0
+        elif self.relation == '>':
+            status = solved_left > 0
+
+        if status == False:
             return 'false'
 
-        elif should_be_zero == 0:
+        elif status == True:
             return 'true'
 
     # -------------------------------------------------------------------------
