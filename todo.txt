@@ -1,0 +1,89 @@
+WARNING!!
+This is not intended to be read by anyone other than me so don't try
+too hard to understand.
+
+#-DONE-I-THINK---------------------------------------------------------------
+case.substitute(depth=all_the_way)
+case._deduce_depth()
+
+#----------------------------------------------------------------------------
+case.deduce_edges()
+
+#----------------------------------------------------------------------------
+class Equation
+    LinearFormula left
+    LinearFormula right
+
+    Equation solve()
+        left -= right
+        right = 0
+        left.zip()
+
+    # why in equation?
+    # should be part of LinearFormula or Case
+    # see next point
+    upper_bound # s?
+    lower_bound # s?
+    get_lower_bound()
+    get_upper_bound()
+
+class Inequality(Equation)
+    ...
+
+#--------------------------------------------------------------------
+simple inequality ==> upper / lower bounds of a formula
+# see previous point
+
+#----------------------------------------------------------------------------
+rewrite tests so that they rely less on previous tests
+FROM:
+(init_args, method_args)
+...
+complex_object = ComplexClass(*init_args)
+complex_object.complex_method(*method_args)
+assert(complex_object.attributes, init_args.method(*method_args))
+TO:
+(init_args, method_args, expected_args)
+...
+complex_object = ComplexClass(*init_args)
+complex_object.complex_method(*method_args)
+assert(complex_object, ComplexClass(*expected_args))
+
+
+#----------------------------------------------------------------------------
+test decorators
+
+#----------------------------------------------------------------------------
+check if substitute(recursive=True) goes in circles
+
+#----------------------------------------------------------------------------
+class DoubleCVN
+    CVN upper
+    CVN lower
+
+class SSANumbering
+    DoubleCVN numbering
+
+    deduce_edges()
+
+or (better i think):
+class SSACycleDoubleCVN
+    CVN upper
+    CVN lower
+
+    deduce_edges()
+
+==> MyCase has no or little purpose
+
+#----------------------------------------------------------------------------
+length ==> last_vertex_number % 3 = 0 (case_1)
+        or last_vertex_number % 3 = 1 (case_2), ...
+
+but first do Equation
+
+#----------------------------------------------------------------------------
+LinearFormula('') == LinearFormula('0')
+
+
+
+
