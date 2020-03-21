@@ -10,6 +10,8 @@ from test_cv_numbering import TestCVN
 
 from test_case import TestCase, TestMyCase
 
+from test_linear_relation import TestLinearRelation
+
 if __name__ == '__main__':
 
     unittest.main()
