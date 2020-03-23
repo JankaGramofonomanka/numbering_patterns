@@ -10,7 +10,6 @@ class TestLinearRelation(unittest.TestCase):
 
     def test_init_with_formulas(self):
 
-        # init with formulas
         test_data = [
             # left          right
             ('a + b - 3c',  '-b + a + c - 4c + 2b'  ),
@@ -40,9 +39,8 @@ class TestLinearRelation(unittest.TestCase):
             self.assertEqual(rel.right, right)
             self.assertEqual(rel.relation, relation)
 
-    def test_init_with_string(self):
+    def test_init_with_string_and_relation(self):
 
-        # init with string
         test_data = [
             # init string               left        right           relation
             ('a+b-3c = -b+a+c-4c+2b',   'a+b-3c',   '-b+a+c-4c+2b', '=='),
@@ -56,14 +54,24 @@ class TestLinearRelation(unittest.TestCase):
         ]
 
         for info in test_data:
-            rel = LinearRelation(info[0])
+
+            # init with string
+            rel_1 = LinearRelation(info[0])
+
+            # init with relation
+            rel_2 = LinearRelation(rel_1)
+
             left = LinearFormula(info[1])
             right = LinearFormula(info[2])
             relation = info[3]
 
-            self.assertEqual(rel.left, left)
-            self.assertEqual(rel.right, right)
-            self.assertEqual(rel.relation, relation)
+            self.assertEqual(rel_1.left, left)
+            self.assertEqual(rel_1.right, right)
+            self.assertEqual(rel_1.relation, relation)
+
+            self.assertEqual(rel_2.left, left)
+            self.assertEqual(rel_2.right, right)
+            self.assertEqual(rel_2.relation, relation)
 
     #-------------------------------------------------------------------------
 
@@ -567,6 +575,61 @@ class TestLinearRelation(unittest.TestCase):
         for info in test_data:
             eq = LinearRelation(info[0])
             self.assertEqual(eq.status(), info[1])
+
+    def test_equivalent(self):
+
+        test_data = [
+            ('a == b',      'a == b'    ),
+            ('a <= b',      'a <= b'    ),
+            ('a >= b',      'a >= b'    ),
+            ('a < b',       'a < b'     ),
+            ('a > b',       'a > b'     ),
+
+            ('a == b',      'b == a'    ),
+            ('a == b',      'a - b == 0'),
+            ('a - b == 0',  'b - a == 0'),
+            ('a <= b',      'b >= a'    ),
+            ('a <= b',      'a - b <= 0'),
+            ('a >= b',      'a - b >= 0'),
+            ('a < b',       'b > a'     ),
+            ('a < b',       'a - b < 0' ),
+            ('a < b',       'b - a > 0' ),
+            ('2a < 0',      'a < 0'     ),
+            ('2a == b',     '4a == 2b'  ),
+            ('a + a == b',  '2a == b'   ),
+            ('a + a <= b',  'b >= 2a'   ),
+        ]
+
+        for info in test_data:
+            rel_1 = LinearRelation(info[0])
+            rel_2 = LinearRelation(info[1])
+            self.assertTrue(rel_1.equivalent(rel_2))
+            self.assertTrue(rel_1.equivalent(info[1]))
+            self.assertTrue(rel_2.equivalent(rel_1))
+            self.assertTrue(rel_2.equivalent(info[0]))
+
+        test_data = [
+            ('a <= b',      'b <= a'    ),
+            ('a < b',       'b < a'     ),
+            ('a < b',       'b - a < 0' ),
+            ('a < b',       'a <= b'    ),
+            ('a == b',      'a < b'     ),
+            ('a == b',      'a <= b'    ),
+            ('a == b',      'a >= b'    ),
+            ('a == b',      'a > b'     ),
+            ('a < b',       'b >= a'    ),
+            ('2a < b',      'a < b'     ),
+            ('a == b',      'x == y'    ),
+        ]
+
+        for info in test_data:
+            rel_1 = LinearRelation(info[0])
+            rel_2 = LinearRelation(info[1])
+            self.assertFalse(rel_1.equivalent(rel_2))
+            self.assertFalse(rel_1.equivalent(info[1]))
+            self.assertFalse(rel_2.equivalent(rel_1))
+            self.assertFalse(rel_2.equivalent(info[0]))
+
 
 
 

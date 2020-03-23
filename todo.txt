@@ -87,7 +87,24 @@ LinearFormula('') == LinearFormula('0')
 #-DONE-I-THINK---------------------------------------------------------------
 make sure that multipliers are only integers
 
-#---------------------------------------------------------------------------
+#----------------------------------------------------------------------------
 clean up tests for LinearFormula
 
+#----------------------------------------------------------------------------
+>>> pattern.get_max_ntuple_index('left')
+(index_0, index_1, index_2, ..., index_n)
+or
+>>> pattern.get_max_ntuple_indices()
+left: (index_0, index_1, index_2, ..., index_n)
+right (index_0, index_1, index_2, ..., index_m)
+
+#----------------------------------------------------------------------------
+rewrite main so that info about patterns is available when solving equations
+
+#----------------------------------------------------------------------------
+class MultiRelationSolver
+
+
+#-DONE-I-THINK---------------------------------------------------------------
+or formula.equivalent(formula_2)
 

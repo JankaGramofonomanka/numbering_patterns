@@ -564,6 +564,27 @@ class LinearFormula():
         else:
             return set(self.variables) - {''}
 
+    @misc.convert_to_type('owners type')
+    def equivalent(self, other):
+        """Tells the user whether <self> and <other> are euivalent or not"""
+
+        self_zipped = self.zip()
+        other_zipped = other.zip()
+
+        # after zip() equivalent formulas should jave the same variables,
+        # including the '' variable
+        if set(self_zipped.variables) != set(other_zipped.variables):
+            return False
+
+        # if the formulas have different multipliers corresponding to the
+        # same variable, the result is false
+        for variable in self_zipped.variables:
+            if self_zipped[variable] != other_zipped[variable]:
+                return False
+
+        # all multipliers are the same
+        return True
+
     #-------------------------------------------------------------------------
 
 

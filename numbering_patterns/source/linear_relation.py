@@ -30,7 +30,7 @@ class LinearRelation():
                     relation = args[0].relation
 
                 LinearRelation.__init__(
-                    self, args[0].left, args[0].right, relation)
+                    self, args[0].left, args[0].right, relation=relation)
 
             # init with string
             if type(args[0]) == str:
@@ -295,5 +295,49 @@ class LinearRelation():
         elif status == True:
             return 'true'
 
-    # -------------------------------------------------------------------------
+    @misc.convert_to_type('owners type')
+    def equivalent(self, other):
+        """Tells the user whether <self> is equivalent to <other>"""
+
+        # two relations of different type cannot be equivalent
+        if (other.relation not in
+                {self.relation, LinearRelation._reversed_rel[self.relation]}):
+            return False
+
+        # given 2 relations, ex. 'L1 == P1' and 'L2 == P2', we want to
+        # transform them to the form 'L1 - P1 == 0' and 'L2 - P2 == 0'
+        # and return something like "'L1 - P1'.equivalent(L2 - P2)"
+        self_solved = self.solve()
+        other_solved = other.solve()
+
+        # note that the <solve> method divides the relation by the greatest
+        # common divisor of the 'L - P' formula's multipliers, so the only
+        # case when 'L1 - P1' == 'a*(L2 - P2)' that we have to take into
+        # account is when 'a' == -1 and the relation in question is '=='
+        # (or if the 2 relations are '<=' and '>=' or '<' and '>', but then
+        # we will reverse one of them)
+
+        if self.relation == '==':
+            if self_solved.left.equivalent(other_solved.left):
+                return True
+            elif self_solved.left.equivalent(-other_solved.left):
+                # the aforementioned case when 'L1 - P1' == '-(L2 - P2)'
+                return True
+            else:
+                return False
+
+        else:
+            if other_solved.relation != self_solved.relation:
+                # relations are reversed so we need to reverse one of the
+                # relations'
+                other_solved *= -1
+
+            return self_solved.left.equivalent(other_solved.left)
+
+
+
+
+
+
+    #-------------------------------------------------------------------------
 
