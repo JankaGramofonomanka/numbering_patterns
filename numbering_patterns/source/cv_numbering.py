@@ -1,5 +1,6 @@
 from numbering_patterns.source.linear_formula import LinearFormula
 from numbering_patterns.source.ntr_sequence import NTermRecursionSequence
+from numbering_patterns.source.linear_relation import LinearRelation
 from numbering_patterns.source import misc
 
 
@@ -258,5 +259,34 @@ class CentralVertexNumbering():
             result |= self.right_len.get_variables(omit_zeros=omit_zeros)
 
         return result
+
+    def get_ntuple_index_inequality(self, side, no_formula, no_last_formula):
+        """Returns an inequality relation between the <ntuple_index> variable
+        of the <no_formula>-th formula of the left or right sequence, and the
+        length of that sequence, given that the last formula in that sequence
+        is it's <no_last_formula>-th formula"""
+
+        if side == 'left':
+            seq = self.left_seq
+            length = self.left_len
+        elif side == 'right':
+            seq = self.right_seq
+            length = self.right_len
+        else:
+            raise ValueError("the 'side' argument must be 'left' or 'right'")
+
+        if not (0 <= no_formula < seq.n and 0 <= no_last_formula < seq.n):
+            raise ValueError("the 'no_formula' and 'no_last_formula'"
+                             + " arguments must be in [0, ..., n)")
+
+        left = LinearFormula(f'{seq.n}i + {no_formula} + 1')
+        left.substitute(i=seq.ntuple_index, inplace=True)
+
+        if no_last_formula >= no_formula:
+            right = length - no_last_formula + no_formula
+        else:
+            right = length - seq.n - no_last_formula + no_formula
+
+        return LinearRelation(left, right, relation='<=').zip()
 
     #-------------------------------------------------------------------------

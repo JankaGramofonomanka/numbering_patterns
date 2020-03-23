@@ -2,6 +2,7 @@ import unittest
 from numbering_patterns.source.cv_numbering import CentralVertexNumbering
 from numbering_patterns.source.ntr_sequence import NTermRecursionSequence
 from numbering_patterns.source.linear_formula import LinearFormula
+from numbering_patterns.source.linear_relation import LinearRelation
 
 class TestCVN(unittest.TestCase):
 
@@ -454,5 +455,85 @@ class TestCVN(unittest.TestCase):
         for info in test_data:
             pattern = CentralVertexNumbering(*info[0])
             self.assertEqual(pattern.get_variables(omit_zeros=True), info[1])
+
+    def test_ntuple_index_inequality(self):
+
+        test_data = [
+            # n     length
+            (3,     'l',
+             # no_formula\no_last_formula
+             (('3i <= l-1', '3i <= l-2', '3i <= l-3'),
+              ('3i <= l-4', '3i <= l-2', '3i <= l-3'),
+              ('3i <= l-4', '3i <= l-5', '3i <= l-3'),)),
+            # n     length
+            (3,     'l',
+             # no_formula\no_last_formula
+             (('3i+1 <= l',     '3i+1 <= l-1',  '3i+1 <= l-2'),
+              ('3i+2 <= l-2',   '3i+2 <= l',    '3i+2 <= l-1'),
+              ('3i+3 <= l-1',   '3i+3 <= l-2',  '3i+3 <= l'),)),
+            # n     length
+            (4,     'l',
+             # no_formula\no_last_formula
+             (('4i+1 <= l',   '4i+1 <= l-1', '4i+1 <= l-2', '4i+1 <= l-3'),
+              ('4i+2 <= l-3', '4i+2 <= l',   '4i+2 <= l-1', '4i+2 <= l-2'),
+              ('4i+3 <= l-2', '4i+3 <= l-3', '4i+3 <= l',   '4i+3 <= l-1'),
+              ('4i+4 <= l-1', '4i+4 <= l-2', '4i+4 <= l-3', '4i+4 <= l'),)),
+        ]
+
+        for info in test_data:
+            n = info[0]
+            length = info[1]
+            pattern = CentralVertexNumbering(1, n*[1], n*[1], length, length)
+            for no_f in range(n):
+                for no_last_f in range(n):
+
+                    expected = LinearRelation(info[2][no_f][no_last_f])
+                    actual = pattern.get_ntuple_index_inequality(
+                        side='left',
+                        no_formula=no_f,
+                        no_last_formula=no_last_f
+                    )
+                    self.assertTrue(expected.equivalent(actual))
+                    actual = pattern.get_ntuple_index_inequality(
+                        side='right',
+                        no_formula=no_f,
+                        no_last_formula=no_last_f
+                    )
+                    self.assertTrue(expected.equivalent(actual))
+
+        test_data = [
+            # n     inequalities
+            #   length
+            (3, 3,  ('i <= 0', 'i <= 0', 'i <= 0')),
+            (3, 4,  ('i <= 1', 'i <= 0', 'i <= 0')),
+            (3, 5,  ('i <= 1', 'i <= 1', 'i <= 0')),
+            (3, 6,  ('i <= 1', 'i <= 1', 'i <= 1')),
+            (3, 7,  ('i <= 2', 'i <= 1', 'i <= 1')),
+            (4, 4,  ('i <= 0', 'i <= 0', 'i <= 0', 'i <= 0')),
+            (4, 6,  ('i <= 1', 'i <= 1', 'i <= 0', 'i <= 0')),
+            (4, 9,  ('i <= 2', 'i <= 1', 'i <= 1', 'i <= 1')),
+            (5, 12, ('i <= 2', 'i <= 2', 'i <= 1', 'i <= 1', 'i <= 1')),
+        ]
+
+        for info in test_data:
+            n = info[0]
+            length = info[1]
+            pattern = CentralVertexNumbering(1, n*[1], n*[1], length, length)
+            for no_f in range(n):
+                no_last_f = (length - 1) % n
+                expected = LinearRelation(info[2][no_f])
+                actual = pattern.get_ntuple_index_inequality(
+                    side='left',
+                    no_formula=no_f,
+                    no_last_formula=no_last_f
+                )
+                self.assertTrue(expected.equivalent(actual))
+                actual = pattern.get_ntuple_index_inequality(
+                    side='right',
+                    no_formula=no_f,
+                    no_last_formula=no_last_f
+                )
+                self.assertTrue(expected.equivalent(actual))
+
 
     #-------------------------------------------------------------------------
