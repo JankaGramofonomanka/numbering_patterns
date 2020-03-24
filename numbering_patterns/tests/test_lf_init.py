@@ -15,7 +15,7 @@ class TestInit(unittest.TestCase):
             ('a+3b-4c+3a',          [1, 3, -4, 3],  ['a', 'b', 'c', 'a']),
             (' a  +7b-  0c -4d ',   [1, 7, 0, -4],  ['a', 'b', 'c', 'd']),
             ('-a + 4c + 3b - 4c',   [-1, 4, 3, -4], ['a', 'c', 'b', 'c']),
-            ('',                    [0],            ['']                ),
+            ('',                    [],             []                  ),
             ('a',                   [1],            ['a']               ),
             ('6',                   [6],            ['']                ),
             ('ab + 3cd - 34ef',     [1, 3, -34],    ['ab', 'cd', 'ef']  ),
@@ -74,10 +74,6 @@ class TestInit(unittest.TestCase):
             formula = LinearFormula(info[0], info[1])
             self.assertEqual(formula.multipliers, info[0])
             self.assertEqual(formula.variables, info[1])
-
-        formula = LinearFormula([], [])
-        self.assertEqual(formula.multipliers, [0])
-        self.assertEqual(formula.variables, [''])
     
     #-------------------------------------------------------------------------
     def test_init_wrong(self):

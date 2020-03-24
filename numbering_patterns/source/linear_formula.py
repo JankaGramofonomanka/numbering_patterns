@@ -59,15 +59,6 @@ class LinearFormula():
         else:
             raise TypeError('the constructor takes at most 2 arguments')
 
-        self._assert_not_empty()
-
-    def _assert_not_empty(self):
-        """make sure the lists aren't empty"""
-
-        if len(self.multipliers) == 0 or len(self.variables) == 0:
-            self.multipliers = [0]
-            self.variables = ['']
-
     #-------------------------------------------------------------------------
 
 
@@ -264,6 +255,12 @@ class LinearFormula():
         return text
 
     def __eq__(self, other):
+        if type(other) != type(self):
+            return False
+
+        if self.multipliers == [] or self.multipliers == [0]:
+            return other.multipliers == [] or other.multipliers == [0]
+
         return (
             self.multipliers == other.multipliers 
             and self.variables == other.variables
@@ -502,8 +499,6 @@ class LinearFormula():
                             inplace=True
                             )
                     break
-
-        self._assert_not_empty()
 
     @misc.inplace(default=False)
     def modulo(self, n):
