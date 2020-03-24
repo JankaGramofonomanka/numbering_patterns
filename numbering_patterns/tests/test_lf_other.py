@@ -139,7 +139,39 @@ class TestOther(unittest.TestCase):
             should_be_formula_1 = multiplier*formula_2 + formula_3
             self.assertTrue(formula_1.equivalent(should_be_formula_1))
 
+    def test_get_bounds(self):
 
+        test_data = [
+            # formula                       upper bounds         upper bound
+            #           lower bounds                    lower bound
+            ('a',       {'a': 'b'},         {'a': 'c'}, 'b',     'c'        ),
+            ('a+b',     {'a': 'b'},         {'a': 'c'}, '2b',    'c+b'      ),
+            ('2a',      {'a': 'b'},         {'a': 'c'}, '2b',    '2c'       ),
+            ('-a',      {'a': 'b'},         {'a': 'c'}, '-c',    '-b'       ),
+            ('a+3b-4c', {'a': 'b', 'c': 2}, {'b': 'c'}, '4b-4c', 'a+3c-8'   ),
+            ('a',       {'a': 1},           {'a': 2},   1,       2          ),
+            ('a+b',     {'a': 1},           {'b': 2},   '1+b',   'a+2'      ),
+        ]
+
+        for info in test_data:
+            formula = LinearFormula(info[0])
+            lower_bounds = info[1]
+            upper_bounds = info[2]
+            expected_lower_bound = LinearFormula(info[3])
+            expected_upper_bound = LinearFormula(info[4])
+
+            result = formula.get_bounds(
+                lower_bounds=lower_bounds,
+                upper_bounds=upper_bounds,
+            )
+
+            actual_lower_bound = result[0]
+            actual_upper_bound = result[1]
+
+            self.assertEqual(
+                actual_lower_bound.zip(), expected_lower_bound.zip())
+            self.assertEqual(
+                actual_upper_bound.zip(), expected_upper_bound.zip())
 
 if __name__ == '__main__':
     unittest.main()

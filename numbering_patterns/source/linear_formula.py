@@ -619,6 +619,40 @@ class LinearFormula():
 
         return (multiplier, this)
 
+    def get_bounds(self, upper_bounds, lower_bounds):
+        """Returns a tuple (l_bound, u_bound) such that
+        l_bound <= <self> <= r_bound, given the bounds of the variables"""
+        if type(upper_bounds) != dict or type(lower_bounds) != dict:
+            raise TypeError('arguments are should be dictionaries')
+
+        lower_kwargs = {}
+        upper_kwargs = {}
+
+        # zip to avoid redundant zips
+        zipped = self.zip()
+        for var, bound in upper_bounds.items():
+            try:
+                mul = zipped[var]
+            except KeyError:
+                continue
+
+            if mul >= 0:
+                upper_kwargs[var] = bound
+            else:
+                lower_kwargs[var] = bound
+
+        for var, bound in lower_bounds.items():
+            mul = zipped[var]
+            if mul >= 0:
+                lower_kwargs[var] = bound
+            else:
+                upper_kwargs[var] = bound
+
+        lower_bound = self.substitute(**lower_kwargs)
+        upper_bound = self.substitute(**upper_kwargs)
+
+        return (lower_bound, upper_bound)
+
     #-------------------------------------------------------------------------
 
 
