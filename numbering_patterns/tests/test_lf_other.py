@@ -107,6 +107,38 @@ class TestOther(unittest.TestCase):
             self.assertEqual(formula_2.equivalent(info[0]), info[2])
             self.assertEqual(formula_2.equivalent(formula_1), info[2])
 
+    def test_separate(self):
+
+        test_data = [
+            ('a+b',         'a',    1,  'b'),
+            ('a+b+c',       'a+b',  1,  'c'),
+            ('2a+2b',       'a+b',  2,  '0'),
+            ('-a-b+c',      'a+b',  -1, 'c'),
+            ('a+5',         '5',    1,  'a'),
+            ('2a+2b+4c',    'a+2c', 2,  '2b'),
+            ('-2a-2b+4c',   'a-2c', -2, '-2b'),
+        ]
+
+        for info in test_data:
+            formula = LinearFormula(info[0])
+            result = formula.separate(info[1])
+            self.assertEqual(result[0], info[2])
+            self.assertTrue(LinearFormula(result[1]).equivalent(info[3]))
+
+        test_data = [
+            ('2a+3b+c',     'a+b'),
+            ('2a+3b+4c',    'a+b+c'),
+            ('2a+3b+4c',    'a+c'),
+        ]
+
+        for info in test_data:
+            formula_1 = LinearFormula(info[0])
+            formula_2 = LinearFormula(info[1])
+            multiplier, formula_3 = formula_1.separate(formula_2)
+
+            should_be_formula_1 = multiplier*formula_2 + formula_3
+            self.assertTrue(formula_1.equivalent(should_be_formula_1))
+
 
 
 if __name__ == '__main__':

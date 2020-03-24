@@ -508,7 +508,7 @@ class LinearFormula():
         for i in range(self.length()):
             self.multipliers[i] %= n
         self.zip(inplace=True)
-    
+
     #-------------------------------------------------------------------------
 
 
@@ -579,6 +579,45 @@ class LinearFormula():
 
         # all multipliers are the same
         return True
+
+    @misc.convert_to_type('owners type')
+    def separate(self, formula):
+        """Returns a tuple ('m', formula_2), such that
+        m*<formula> + formula_2 == <self>"""
+
+        this = self.zip()
+        zipped_formula = formula.zip()
+
+        if zipped_formula.variables in [[], ['']]:
+            this -= formula
+            return (1, this)
+
+        condition = True
+        multiplier = 0
+        while condition:
+
+            if zipped_formula.get_variables() - this.get_variables() != set():
+                condition = False
+                break
+
+            var = zipped_formula.variables[0]
+            if var == '':
+                # this means there are more variables
+                var = zipped_formula.variables[1]
+
+            var_multiplier = this[var]
+            if var_multiplier > 0 and multiplier >= 0:
+                this -= zipped_formula
+                multiplier += 1
+            elif var_multiplier < 0 and var_multiplier <= 0:
+                this += zipped_formula
+                multiplier -= 1
+            else:
+                condition = False
+
+            this.zip(inplace=True)
+
+        return (multiplier, this)
 
     #-------------------------------------------------------------------------
 
