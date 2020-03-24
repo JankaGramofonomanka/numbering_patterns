@@ -484,6 +484,31 @@ class TestLinearRelation(unittest.TestCase):
             eq.solve(inplace=True)
             self.assertEqual(eq, solved)
 
+    def test_expose(self):
+
+        test_data = [
+            ('a == b + c',                      'c'),
+            ('a <= b + c',                      'c'),
+            ('a == b + 3c',                     'c'),
+            ('-a == b + c',                     'a'),
+            ('0 == a + b + c',                  'a'),
+            ('a + b + c == d + f + g',          'b'),
+            ('3a - 2b + 5c == d - 7f + 11g',    'f'),
+            ('3a - 2b + 5c <= d - 7f + 11g',    'f'),
+            ('3a - 2b + 5c >= d - 7f + 11g',    'f'),
+            ('3a - 2b + 5c < d - 7f + 11g',     'f'),
+            ('3a - 2b + 5c > d - 7f + 11g',     'f'),
+        ]
+
+        for info in test_data:
+            rel_1 = LinearRelation(info[0])
+            rel_2 = rel_1.expose(info[1])
+
+            self.assertEqual(rel_2.left.variables, [info[1]])
+            self.assertTrue(rel_2.left.multipliers[0] >= 0)
+            self.assertTrue(rel_1.equivalent(rel_2))
+
+
     #-------------------------------------------------------------------------
 
 

@@ -243,6 +243,25 @@ class LinearRelation():
 
         self /= gcd
 
+    @misc.inplace(default=False)
+    def expose(self, variable):
+        if type(variable) != str:
+            raise TypeError('the variable is not a string')
+
+        self.solve(inplace=True)
+        self.reverse(inplace=True)
+
+        try:
+            multiplier = self.right[variable]
+        except KeyError:
+            raise ValueError(f'{variable} is not part of the relation')
+
+        self -= LinearFormula([multiplier], [variable])
+        if multiplier > 0:
+            self *= -1
+
+        self.zip(inplace=True)
+
     #-------------------------------------------------------------------------
 
 
