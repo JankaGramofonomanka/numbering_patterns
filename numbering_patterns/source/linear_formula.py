@@ -619,9 +619,10 @@ class LinearFormula():
 
         return (multiplier, this)
 
-    def get_bounds(self, upper_bounds, lower_bounds):
+    def get_bounds(self, upper_bounds={}, lower_bounds={}, recursive=False):
         """Returns a tuple (l_bound, u_bound) such that
         l_bound <= <self> <= r_bound, given the bounds of the variables"""
+
         if type(upper_bounds) != dict or type(lower_bounds) != dict:
             raise TypeError('arguments are should be dictionaries')
 
@@ -630,28 +631,82 @@ class LinearFormula():
 
         # zip to avoid redundant zips
         zipped = self.zip()
-        for var, bound in upper_bounds.items():
-            try:
-                mul = zipped[var]
-            except KeyError:
-                continue
-
-            if mul >= 0:
-                upper_kwargs[var] = bound
-            else:
-                lower_kwargs[var] = bound
-
-        for var, bound in lower_bounds.items():
-            mul = zipped[var]
-            if mul >= 0:
-                lower_kwargs[var] = bound
-            else:
-                upper_kwargs[var] = bound
+        zipped._prepare_kwargs_for_get_bounds(
+            lower_kwargs, lower_bounds, 'lower', 'lower')
+        zipped._prepare_kwargs_for_get_bounds(
+            lower_kwargs, upper_bounds, 'lower', 'upper')
+        zipped._prepare_kwargs_for_get_bounds(
+            upper_kwargs, lower_bounds, 'upper', 'lower')
+        zipped._prepare_kwargs_for_get_bounds(
+            upper_kwargs, upper_bounds, 'upper', 'upper')
 
         lower_bound = self.substitute(**lower_kwargs)
         upper_bound = self.substitute(**upper_kwargs)
 
+        if recursive == True:
+            calculate_lower = True
+            calculate_upper = True
+
+            while calculate_lower or calculate_upper:
+                if calculate_lower:
+                    lower_kwargs = {}
+
+                    # zip to avoid redundant zips
+                    lower_bound.zip(inplace=True)
+
+                    lower_bound._prepare_kwargs_for_get_bounds(
+                        lower_kwargs, lower_bounds, 'lower', 'lower')
+                    lower_bound._prepare_kwargs_for_get_bounds(
+                        lower_kwargs, upper_bounds, 'lower', 'upper')
+
+                    if lower_kwargs == {}:
+                        calculate_lower = False
+
+                    lower_bound.substitute(**lower_kwargs, inplace=True)
+
+                if calculate_upper:
+                    upper_kwargs = {}
+
+                    # zip to avoid redundant zips
+                    upper_bound.zip(inplace=True)
+
+                    upper_bound._prepare_kwargs_for_get_bounds(
+                        upper_kwargs, lower_bounds, 'upper', 'lower')
+                    upper_bound._prepare_kwargs_for_get_bounds(
+                        upper_kwargs, upper_bounds, 'upper', 'upper')
+
+                    if upper_kwargs == {}:
+                        calculate_upper = False
+
+                    upper_bound.substitute(**upper_kwargs, inplace=True)
+
         return (lower_bound, upper_bound)
+
+
+
+
+
+
+    def _prepare_kwargs_for_get_bounds(
+            self, kwargs, bounds, result_type, arg_type):
+        """Modifies <kwargs> to pass to the <substitute> method,
+        in the <get_bounds> method"""
+        # <result_type> - type of the dict that's being modified - <kwargs>,
+        # should be 'lower' or 'upper'
+
+        # <arg_type> - type of the dict passed to <get_bounds> - <bounds>,
+        # should be 'lower' or 'upper'
+
+        for var, bound in bounds.items():
+            try:
+                mul = self[var]
+            except KeyError:
+                continue
+
+            if mul >= 0 and arg_type == result_type:
+                kwargs[var] = bound
+            elif mul <= 0 and arg_type != result_type:
+                kwargs[var] = bound
 
     #-------------------------------------------------------------------------
 

@@ -173,5 +173,57 @@ class TestOther(unittest.TestCase):
             self.assertEqual(
                 actual_upper_bound.zip(), expected_upper_bound.zip())
 
+    def test_get_bounds_recursive(self):
+
+        test_data = [
+            ('a',                       # formula
+             {'a': 'b', 'b': 'c'},      # lower bounds
+             {'a': 'd', 'd': 'e'},      # upper bounds
+             # lower bound      upper bound
+             'c',               'e'),
+
+            ('a+b',
+             {'a': 'b', 'b': 'c'},
+             {'a': 'd', 'd': 'e'},
+             '2c', 'e+b'),
+
+            ('a+b',
+             {'a': 'd', 'd': 'e'},
+             {'a': 'b', 'b': 'c'},
+             'e+b', '2c'),
+
+            ('a+b+c+d',
+             {'a': 'b', 'b': 'c', 'c': 'd', 'd': 'e'},
+             {'a': 'f', 'f': 'g', 'b': 'f', 'c': 'g'},
+             '4e', '3g+d'),
+
+            ('a+b+c+d',
+             {'a': 'f', 'f': 'g', 'b': 'f', 'c': 'g'},
+             {'a': 'b', 'b': 'c', 'c': 'd', 'd': 'e'},
+             '3g+d', '4e'),
+        ]
+
+        for info in test_data:
+            formula = LinearFormula(info[0])
+            lower_bounds = info[1]
+            upper_bounds = info[2]
+            expected_lower_bound = LinearFormula(info[3])
+            expected_upper_bound = LinearFormula(info[4])
+
+            result = formula.get_bounds(
+                lower_bounds=lower_bounds,
+                upper_bounds=upper_bounds,
+                recursive=True
+            )
+
+            actual_lower_bound = result[0]
+            actual_upper_bound = result[1]
+
+            self.assertEqual(
+                actual_lower_bound.zip(), expected_lower_bound.zip())
+            self.assertEqual(
+                actual_upper_bound.zip(), expected_upper_bound.zip())
+
+
 if __name__ == '__main__':
     unittest.main()
