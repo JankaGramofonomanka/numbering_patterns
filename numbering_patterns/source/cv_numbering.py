@@ -289,4 +289,36 @@ class CentralVertexNumbering():
 
         return LinearRelation(left, right, relation='<=').zip()
 
+    def get_edges(self):
+        """Returns values assigned to edges of the graph based on the vertex
+        numbering"""
+
+        result = {}
+
+        result['center right'] = self.center + self.evaluate(1)
+        result['center right'].zip(inplace=True)
+
+        result['center left'] = self.center + self.evaluate(-1)
+        result['center left'].zip(inplace=True)
+
+        temp_dict = {'left': self.left_seq, 'right': self.right_seq}
+        for side, seq in temp_dict.items():
+            result[side] = seq.n*[0]
+
+            for i in range(seq.n - 1):
+                result[side][i] = seq.formulas[i] + seq.formulas[i + 1]
+                result[side][i].zip(inplace=True)
+
+            # generate the last edge
+            next_formula = seq.formulas[0]
+            ntuple_index = seq.ntuple_index
+            next_ntuple_index = LinearFormula(ntuple_index) + 1
+
+            kwargs = {ntuple_index: next_ntuple_index}
+            next_formula.substitute(**kwargs, inplace=True)
+
+            result[side][seq.n - 1] = seq.formulas[seq.n - 1] + next_formula
+            result[side][seq.n - 1].zip(inplace=True)
+
+        return result
     #-------------------------------------------------------------------------

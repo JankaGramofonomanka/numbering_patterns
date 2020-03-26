@@ -535,5 +535,57 @@ class TestCVN(unittest.TestCase):
                 )
                 self.assertTrue(expected.equivalent(actual))
 
+    def test_get_edges(self):
+
+        test_data = [
+            ((1, (1, 1, 1), (1, 1)),
+             (2, 2, [2, 2, 2], [2, 2])),
+
+            (('a', ('i', 'i+1', 'i+2'), ('i-1', 'i-2')),
+             ('a', 'a-1', ['2i+1', '2i+3', '2i+3'], ['2i-3', '2i-2'])),
+        ]
+
+        for info in test_data:
+
+            # test with default ntuple index
+            pattern = CentralVertexNumbering(*info[0])
+
+            center_left = LinearFormula(info[1][0])
+            center_right = LinearFormula(info[1][1])
+
+            left = [LinearFormula(string).zip() for string in info[1][2]]
+            right = [LinearFormula(string).zip() for string in info[1][3]]
+
+            result = pattern.get_edges()
+
+            self.assertEqual(result['center left'], center_left)
+            self.assertEqual(result['center right'], center_right)
+            self.assertEqual(result['left'], left)
+            self.assertEqual(result['right'], right)
+
+            # test with custom ntuple indices
+            formulas = []
+            for formula in info[0][1]:
+                formulas.append(LinearFormula(formula).substitute(i='p'))
+            left_seq = NTermRecursionSequence(*formulas, ntuple_index='p')
+
+            formulas = []
+            for formula in info[0][2]:
+                formulas.append(LinearFormula(formula).substitute(i='q'))
+            right_seq = NTermRecursionSequence(*formulas, ntuple_index='q')
+
+            pattern = CentralVertexNumbering(info[0][0], left_seq, right_seq)
+
+            for i in range(len(left)):
+                left[i].substitute(i='p', inplace=True)
+
+            for i in range(len(right)):
+                right[i].substitute(i='q', inplace=True)
+
+            result = pattern.get_edges()
+            self.assertEqual(result['center left'], center_left)
+            self.assertEqual(result['center right'], center_right)
+            self.assertEqual(result['left'], left)
+            self.assertEqual(result['right'], right)
 
     #-------------------------------------------------------------------------
