@@ -619,7 +619,7 @@ class LinearFormula():
 
         return (multiplier, this)
 
-    def get_bounds(self, upper_bounds={}, lower_bounds={}, recursive=False):
+    def get_bounds(self, lower_bounds={}, upper_bounds={}, recursive=False):
         """Returns a tuple (l_bound, u_bound) such that
         l_bound <= <self> <= r_bound, given the bounds of the variables"""
 
@@ -631,6 +631,14 @@ class LinearFormula():
 
         # zip to avoid redundant zips
         zipped = self.zip()
+
+        # we will use the <substitute> method to get the lower and upper
+        # bounds, therefore we need to chose which given bound goes where
+
+        # for example if the formula is 'a - b' and the upper bound of 'b' is
+        # 5, then we will get the lower bound of the formula by substituting
+        # 'b' for 5, but if the formula is 'a + b', then the aforemention
+        # operation will give us the upper bound
         zipped._prepare_kwargs_for_get_bounds(
             lower_kwargs, lower_bounds, 'lower', 'lower')
         zipped._prepare_kwargs_for_get_bounds(
@@ -654,12 +662,14 @@ class LinearFormula():
                     # zip to avoid redundant zips
                     lower_bound.zip(inplace=True)
 
+                    # choose the variable bounds
                     lower_bound._prepare_kwargs_for_get_bounds(
                         lower_kwargs, lower_bounds, 'lower', 'lower')
                     lower_bound._prepare_kwargs_for_get_bounds(
                         lower_kwargs, upper_bounds, 'lower', 'upper')
 
                     if lower_kwargs == {}:
+                        # there are no more bounds to use
                         calculate_lower = False
 
                     lower_bound.substitute(**lower_kwargs, inplace=True)
@@ -670,22 +680,19 @@ class LinearFormula():
                     # zip to avoid redundant zips
                     upper_bound.zip(inplace=True)
 
+                    # choose the variable bounds
                     upper_bound._prepare_kwargs_for_get_bounds(
                         upper_kwargs, lower_bounds, 'upper', 'lower')
                     upper_bound._prepare_kwargs_for_get_bounds(
                         upper_kwargs, upper_bounds, 'upper', 'upper')
 
                     if upper_kwargs == {}:
+                        # there are no more bounds to use
                         calculate_upper = False
 
                     upper_bound.substitute(**upper_kwargs, inplace=True)
 
         return (lower_bound, upper_bound)
-
-
-
-
-
 
     def _prepare_kwargs_for_get_bounds(
             self, kwargs, bounds, result_type, arg_type):
