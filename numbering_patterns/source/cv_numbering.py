@@ -310,7 +310,7 @@ class CentralVertexNumbering():
                 result[side][i].zip(inplace=True)
 
             # generate the last edge
-            next_formula = seq.formulas[0]
+            next_formula = seq.formulas[0].copy()
             ntuple_index = seq.ntuple_index
             next_ntuple_index = LinearFormula(ntuple_index) + 1
 

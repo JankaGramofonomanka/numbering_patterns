@@ -549,6 +549,7 @@ class TestCVN(unittest.TestCase):
 
             # test with default ntuple index
             pattern = CentralVertexNumbering(*info[0])
+            ctrl_pattern = CentralVertexNumbering(*info[0])
 
             center_left = LinearFormula(info[1][0])
             center_right = LinearFormula(info[1][1])
@@ -562,6 +563,7 @@ class TestCVN(unittest.TestCase):
             self.assertEqual(result['center right'], center_right)
             self.assertEqual(result['left'], left)
             self.assertEqual(result['right'], right)
+            self.assertEqual(pattern, ctrl_pattern)
 
             # test with custom ntuple indices
             formulas = []
