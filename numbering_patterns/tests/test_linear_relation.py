@@ -1,6 +1,6 @@
 import unittest
-from numbering_patterns.source.linear_formula import LinearFormula
-from numbering_patterns.source.linear_relation import LinearRelation
+from ..source.linear_formula import LinearFormula
+from ..source.linear_relation import LinearRelation
 
 
 class TestLinearRelation(unittest.TestCase):

@@ -1,6 +1,6 @@
 import unittest
-from numbering_patterns.source.ntr_sequence import NTermRecursionSequence
-from numbering_patterns.source.linear_formula import LinearFormula
+from ..source.ntr_sequence import NTermRecursionSequence
+from ..source.linear_formula import LinearFormula
 
 class TestNTRSequence(unittest.TestCase):
 

@@ -1,5 +1,5 @@
-from numbering_patterns.source.linear_formula import LinearFormula
-from numbering_patterns.source import misc
+from .linear_formula import LinearFormula
+from . import misc
 
 
 class NTermRecursionSequence():

@@ -1,5 +1,5 @@
-from numbering_patterns.source.linear_formula import LinearFormula
-from numbering_patterns.source.cv_numbering import CentralVertexNumbering
+from .linear_formula import LinearFormula
+from .cv_numbering import CentralVertexNumbering
 
 
 class Case():

@@ -1,5 +1,5 @@
 import unittest
-from numbering_patterns.source.linear_formula import LinearFormula
+from ..source.linear_formula import LinearFormula
 
 class TestModifiers(unittest.TestCase):
 

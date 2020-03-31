@@ -1,7 +1,7 @@
-from numbering_patterns.source.linear_formula import LinearFormula
-from numbering_patterns.source.ntr_sequence import NTermRecursionSequence
-from numbering_patterns.source.linear_relation import LinearRelation
-from numbering_patterns.source import misc
+from .linear_formula import LinearFormula
+from .ntr_sequence import NTermRecursionSequence
+from .linear_relation import LinearRelation
+from . import misc
 
 
 class CentralVertexNumbering():

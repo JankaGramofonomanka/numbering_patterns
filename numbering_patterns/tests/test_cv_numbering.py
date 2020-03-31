@@ -1,8 +1,8 @@
 import unittest
-from numbering_patterns.source.cv_numbering import CentralVertexNumbering
-from numbering_patterns.source.ntr_sequence import NTermRecursionSequence
-from numbering_patterns.source.linear_formula import LinearFormula
-from numbering_patterns.source.linear_relation import LinearRelation
+from ..source.cv_numbering import CentralVertexNumbering
+from ..source.ntr_sequence import NTermRecursionSequence
+from ..source.linear_formula import LinearFormula
+from ..source.linear_relation import LinearRelation
 
 class TestCVN(unittest.TestCase):
 

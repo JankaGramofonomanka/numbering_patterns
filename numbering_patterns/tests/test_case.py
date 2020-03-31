@@ -1,7 +1,7 @@
 import unittest
-from numbering_patterns.source.case import Case, MyCase
-from numbering_patterns.source.linear_formula import LinearFormula
-from numbering_patterns.source.cv_numbering import CentralVertexNumbering
+from ..source.case import Case, MyCase
+from ..source.linear_formula import LinearFormula
+from ..source.cv_numbering import CentralVertexNumbering
 
 
 class TestCase(unittest.TestCase):

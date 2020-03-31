@@ -1,4 +1,4 @@
-from numbering_patterns.source import misc
+from . import misc
 
 
 class LinearFormula():
