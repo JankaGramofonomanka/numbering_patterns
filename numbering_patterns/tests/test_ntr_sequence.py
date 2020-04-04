@@ -423,8 +423,7 @@ class TestNTRSequence(unittest.TestCase):
         for info in test_data:
             n = info[0]
             length = info[1]
-            seq = NTermRecursionSequence(
-                *n*[1], length=length)
+            seq = NTermRecursionSequence(*n*[1], length=length)
 
             for no_f in range(n):
                 no_last_f = (length - 1) % n
@@ -456,5 +455,31 @@ class TestNTRSequence(unittest.TestCase):
         for info in test_data:
             seq = NTermRecursionSequence(*info[0]*[1], length=info[1])
             self.assertRaises(ValueError, seq.get_length_mod_n)
-            
+
+    def test_get_ntuple_index_bound(self):
+
+        test_data = [
+            # n     bounds
+            #   length
+            (3, 3,  (0, 0, 0)),
+            (3, 4,  (1, 0, 0)),
+            (3, 5,  (1, 1, 0)),
+            (3, 6,  (1, 1, 1)),
+            (3, 7,  (2, 1, 1)),
+            (4, 4,  (0, 0, 0, 0)),
+            (4, 6,  (1, 1, 0, 0)),
+            (4, 9,  (2, 1, 1, 1)),
+            (5, 12, (2, 2, 1, 1, 1)),
+        ]
+
+        for info in test_data:
+            n = info[0]
+            length = info[1]
+            seq = NTermRecursionSequence(*n*[1], length=length)
+
+            for no_f in range(n):
+                expected = LinearFormula(info[2][no_f])
+                actual = seq.get_ntuple_index_bound(no_formula=no_f)
+                self.assertEqual(expected, actual)
+
     #-------------------------------------------------------------------------

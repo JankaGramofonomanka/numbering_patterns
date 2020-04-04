@@ -240,5 +240,25 @@ class NTermRecursionSequence():
             raise ValueError(
                 f'the value {self.length} % {self.n} is ambiguous')
 
+    def get_ntuple_index_bound(self, no_formula):
+        """Returns the upper bound of the <self.ntuple_index> variable given
+        that the current formula is the <no_formula>-th formula, if such
+        bound can be determined"""
+
+        relation = self.get_ntuple_index_inequality(
+            no_formula, self.get_length_mod_n() - 1)
+
+        relation.expose(self.ntuple_index, inplace=True)
+        if relation.relation != '<=':
+            # this should never happen
+            raise ValueError(f'something went wrong: {relation}')
+
+        multiplier = relation.left[self.ntuple_index]
+        if multiplier != 1:
+            raise ValueError(
+                f'cannot generate the upper bound of {self.ntuple_index}')
+
+        return relation.right
+
     #-------------------------------------------------------------------------
 
