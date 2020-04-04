@@ -11,50 +11,79 @@ class TestCVN(unittest.TestCase):
 
     def test_init(self):
 
-        test_data = [
-            # init args
-            (4,     ('i', '2i'),    ('2i', 'i'),    3,      3       ),
-            ('2n',  ('i', '2i'),    ('2i', 'i'),    '2k',   '2k + 1'),
-            (4,     ('i', '2i'),    ('2i', 'i')),
-        ]
+        # init with formulas and sequences
+        center = LinearFormula('a + b')
+        left_seq = NTermRecursionSequence('i', '2i', '3', length='4k')
+        right_seq = NTermRecursionSequence('-4i', '2i', 'i+1', length='6k+2')
 
-        for info in test_data:
+        pattern = CentralVertexNumbering(center, left_seq, right_seq)
+        self.assertEqual(pattern.center, center)
+        self.assertEqual(pattern.left_seq, left_seq)
+        self.assertEqual(pattern.right_seq, right_seq)
+        self.assertEqual(pattern.ntuple_index, 'i')
+        self.assertEqual(pattern.ntuple_index, pattern.left_seq.ntuple_index)
+        self.assertEqual(pattern.ntuple_index, pattern.right_seq.ntuple_index)
 
-            # pass sequences as strings
-            pattern_1 = CentralVertexNumbering(*info)
+        # overwrite lengths and the 'ntuple index'
+        pattern = CentralVertexNumbering(
+            center, left_seq, right_seq,
+            ntuple_index='j',
+            left_len='5l+4',
+            right_len='7l'
+        )
+        self.assertEqual(pattern.center, center)
+        for i in range(3):
+            self.assertEqual(
+                pattern.left_seq.formulas[i],
+                left_seq.formulas[i].substitute(i='j')
+            )
+            self.assertEqual(
+                pattern.right_seq.formulas[i],
+                right_seq.formulas[i].substitute(i='j')
+            )
 
-            # pass sequences as <NTermRecursionSequence>
-            args = list(info)
-            args[1] = NTermRecursionSequence(*info[1])
-            args[2] = NTermRecursionSequence(*info[2])
-            pattern_2 = CentralVertexNumbering(*args)
+        self.assertEqual(pattern.ntuple_index, 'j')
+        self.assertEqual(pattern.left_seq.length, LinearFormula('5l+4'))
+        self.assertEqual(pattern.right_seq.length, LinearFormula('7l'))
 
-            # init with kwargs
-            kwargs = {}
-            kwargs['center'] = info[0]
-            kwargs['left_seq'] = info[1]
-            kwargs['right_seq'] = info[2]
-            if len(info) > 3:
-                kwargs['l_len'] = info[3]
-                kwargs['r_len'] = info[4]
+        # different 'ntuple indices'
+        pattern = CentralVertexNumbering(
+            center, left_seq, right_seq.set_ntuple_index('j'))
 
-            pattern_3 = CentralVertexNumbering(**kwargs)
+        self.assertEqual(pattern.left_seq, left_seq)
+        self.assertEqual(pattern.right_seq, right_seq)
+        self.assertEqual(pattern.ntuple_index, 'i')
+        self.assertEqual(pattern.left_seq.ntuple_index, 'i')
+        self.assertEqual(pattern.right_seq.ntuple_index, 'i')
 
-            for pattern in [pattern_1, pattern_2, pattern_3]:
-                self.assertEqual(pattern.center, LinearFormula(info[0]))
+        # init with strings
+        pattern = CentralVertexNumbering(
+            'a + b', ('i', '2i', '3'), ('-4i', '2i', 'i+1'))
 
-                left_seq = NTermRecursionSequence(*info[1])
-                right_seq = NTermRecursionSequence(*info[2])
-                self.assertEqual(pattern.left_seq, left_seq)
-                self.assertEqual(pattern.right_seq, right_seq)
+        self.assertEqual(pattern.center, LinearFormula('a + b'))
+        self.assertEqual(
+            pattern.left_seq, NTermRecursionSequence('i', '2i', '3'))
+        self.assertEqual(
+            pattern.right_seq, NTermRecursionSequence('-4i', '2i', 'i+1'))
 
-                if len(info) > 3:
-                    self.assertEqual(pattern.left_len, LinearFormula(info[3]))
-                    self.assertEqual(
-                        pattern.right_len, LinearFormula(info[4]))
-                else:
-                    self.assertEqual(pattern.left_len, LinearFormula('inf'))
-                    self.assertEqual(pattern.right_len, LinearFormula('inf'))
+        self.assertEqual(pattern.ntuple_index, 'i')
+        self.assertEqual(pattern.left_seq.ntuple_index, 'i')
+        self.assertEqual(pattern.right_seq.ntuple_index, 'i')
+
+        # init with another pattern
+        pattern = CentralVertexNumbering(
+            'a + b', ('i', '2i', '3'), ('-4i', '2i', 'i+1'),
+            ntuple_index='j', left_len='4k', right_len='5k'
+        )
+
+        pattern_2 = CentralVertexNumbering(pattern)
+        self.assertEqual(pattern.center, pattern_2.center)
+        self.assertEqual(pattern.left_seq, pattern_2.left_seq)
+        self.assertEqual(pattern.right_seq, pattern_2.right_seq)
+        self.assertEqual(pattern.ntuple_index, pattern_2.ntuple_index)
+
+
+
 
     def test_invalid_init(self):
 
@@ -70,7 +99,9 @@ class TestCVN(unittest.TestCase):
         ]
 
         for args in test_data:
-            self.assertRaises(ValueError, CentralVertexNumbering, *args)
+            self.assertRaises(
+                ValueError, CentralVertexNumbering,
+                *args[:3], left_len=args[3], right_len=args[4])
 
         # custom <ntuple_index>
         test_data = [
@@ -84,10 +115,19 @@ class TestCVN(unittest.TestCase):
         ]
 
         for args in test_data:
-            new_args = list(args)
+            new_args = list(args[:3])
             new_args[1] = NTermRecursionSequence(*args[1], ntuple_index='j')
             new_args[2] = NTermRecursionSequence(*args[2], ntuple_index='j')
-            self.assertRaises(ValueError, CentralVertexNumbering, *new_args)
+            self.assertRaises(
+                ValueError, CentralVertexNumbering,
+                *new_args, left_len=args[3], right_len=args[4])
+
+        # invalid ntuple_indices
+        left_seq = NTermRecursionSequence('2i', 'i', '4i')
+        right_seq = NTermRecursionSequence(
+            '3j', 'j+i', '4j-3i', ntuple_index='j')
+        self.assertRaises(
+            ValueError, CentralVertexNumbering, 'a', left_seq, right_seq)
 
     #-------------------------------------------------------------------------
 
@@ -97,64 +137,119 @@ class TestCVN(unittest.TestCase):
     def test_str(self):
 
         test_data = [
-            # init args/
-            # /string
-            ((4,    ('i', '2i'),        ('2i', 'i'),    3,      3       ),
-             'CVN(3|2i, i|<-{}|4|{}->|2i, i|3)'),
 
-            (('2n', ('i', '2j', '3i'),  ('2i', 'j'),    '2k',   '2k + 1'),
-             'CVN(2k|3i, 2j, i|<-{}|2n|{}->|2i, j|2k + 1)'),
+            ((4,    ('i', '2i'),        ('2i', 'i')),       # init args
+             {'left_len': 3,    'right_len': 3},            # init kwargs
+             'CVN(3<-|2i, i|<-i|4|i->|2i, i|->3)'),         # string
+
+            (('2n', ('i', '2i', '3i'),  ('2i', 'i')),
+             {'left_len': '2k', 'right_len': '2k + 1'},
+             'CVN(2k<-|3i, 2i, i|<-i|2n|i->|2i, i|->2k + 1)'),
+
+            (('2n', ('i', '2i', '3i'),  ('2i', 'i')),
+             {'left_len': '2k', 'right_len': '2k + 1',  'ntuple_index': 'j'},
+             'CVN(2k<-|3j, 2j, j|<-j|2n|j->|2j, j|->2k + 1)'),
 
             ((4,    ('i',),             ('2i', 'i')),
-             'CVN(inf|i|<-{}|4|{}->|2i, i|inf)'),
+             {},
+             'CVN(inf<-|i|<-i|4|i->|2i, i|->inf)'),
 
+            ((4,    ('i',),             ('2i', 'i')),
+             {'ntuple_index': 'j'},
+             'CVN(inf<-|j|<-j|4|j->|2j, j|->inf)'),
         ]
 
         for info in test_data:
-            pattern = CentralVertexNumbering(*info[0])
-            self.assertEqual(str(pattern), info[1].format('i', 'i'))
-
-            args = list(info[0])
-            args[1] = NTermRecursionSequence(*info[0][1], ntuple_index='p')
-            args[2] = NTermRecursionSequence(*info[0][2], ntuple_index='q')
-            pattern = CentralVertexNumbering(*args)
-            self.assertEqual(str(pattern), info[1].format('p', 'q'))
+            pattern = CentralVertexNumbering(*info[0], **info[1])
+            self.assertEqual(str(pattern), info[2])
 
     def test_eq(self):
 
         # equal
         test_data = [
-            # init args
-            (4,     ('i', '2i'),    ('2i', 'i'),    3,      3       ),
-            ('2n',  ('i', '2i'),    ('2i', 'i'),    '2k',   '2k + 1'),
-            (4,     ('i', '2i'),    ('2i', 'i') ),
+            # custom lengths
+            ((4,    ('i', '2i'),    ('2i', 'i')),       # init args
+             {'left_len': 3,    'right_len': 3}),       # init kwargs
+
+            (('2n', ('i', '2i'),    ('2i', 'i')),
+             {'left_len': '2k', 'right_len': '2k + 1'}),
+
+            # default everything
+            ((4,    ('i', '2i'),    ('2i', 'i')),
+             {}),
+
+            # custom ntuple index
+            ((4,    ('i', '2i'),    ('2i', 'i')),
+             {'ntuple_index': 'j'}),
+
+            # custom everythong
+            ((4,    ('i', '2i'),    ('2i', 'i')),
+             {'left_len': '2k', 'right_len': '2k + 1', 'ntuple_index': 'j'}),
         ]
 
-        for args in test_data:
-            pattern_1 = CentralVertexNumbering(*args)
-            pattern_2 = CentralVertexNumbering(*args)
+        for info in test_data:
+            pattern_1 = CentralVertexNumbering(*info[0], **info[1])
+            pattern_2 = CentralVertexNumbering(*info[0], **info[1])
 
             self.assertEqual(pattern_1, pattern_2)
 
         # not equal
         test_data = [
-            # init args
-            ((4,    ('i', '2i'),    ('2i', 'i'), 3, 3),     # pattern 1
-             (4,    ('i', '2i'),    ('2i', 'i'))),          # pattern 2
 
-            (('2',  ('i', '2i'),    ('2i', 'i'),    '2k',   '2k + 1'),
-             ('2n', ('i', '2i'),    ('2i', 'i'),    '2k',   '2k + 1')),
+            # different lengths
+            ((4,    ('i', '2i'),    ('2i', 'i')),   # pattern 1 init args
+             (4,    ('i', '2i'),    ('2i', 'i')),   # pattern 2 init args
+             {'left_len': 3,    'right_len': 3},    # pattern 1 init kwargs
+             {}),                                   # pattern 2 init kwargs
 
+            # different left length
+            ((4, ('i', '2i'), ('2i', 'i')),
+             (4, ('i', '2i'), ('2i', 'i')),
+             {'left_len': 3, 'right_len': 3},
+             {'left_len': '3k', 'right_len': 3}),
+
+            # different right length
+            ((4, ('i', '2i'), ('2i', 'i')),
+             (4, ('i', '2i'), ('2i', 'i')),
+             {'left_len': 3, 'right_len': 3},
+             {'left_len': 3, 'right_len': '3k'}),
+
+            # different centers (with lengths)
             (('2',  ('i', '2i'),    ('2i', 'i')),
-             ('2n', ('i', '2i'),    ('2i', 'i'))),
+             ('2n', ('i', '2i'),    ('2i', 'i')),
+             {'left_len': '2k', 'right_len': '2k + 1'},
+             {'left_len': '2k', 'right_len': '2k + 1'}),
 
-            ((4,    ('2i', 'i'),    ('i', '2i'), 3, 3),
-             (4,    ('i', '2i'),    ('2i', 'i'), 3, 3)),
+            # different centers (no lengths)
+            (('2',  ('i', '2i'),    ('2i', 'i')),
+             ('2n', ('i', '2i'),    ('2i', 'i')),
+             {}, {}),
+
+            # different left sequnce
+            ((4,    ('2i', 'i'),    ('i', '2i')),
+             (4,    ('i', '2i'),    ('i', '2i')),
+             {}, {}),
+
+            # different right sequnces
+            ((4, ('2i', 'i'), ('i', '2i')),
+             (4, ('2i', 'i'), ('2i', 'i')),
+             {}, {}),
+
+            # different ntuple indices (no lengths)
+            (('2',  ('i', '2i'),    ('2i', 'i')),
+             ('2',  ('i', '2i'),    ('2i', 'i')),
+             {'ntuple_index': 'j'}, {}),
+
+            # different ntuple indices (with lengths)
+            (('2',  ('i', '2i'),    ('2i', 'i')),
+             ('2',  ('i', '2i'),    ('2i', 'i')),
+             {'left_len': '2k', 'right_len': '2k + 1', 'ntuple_index': 'j'},
+             {'left_len': '2k', 'right_len': '2k + 1'}),
         ]
 
         for info in test_data:
-            pattern_1 = CentralVertexNumbering(*info[0])
-            pattern_2 = CentralVertexNumbering(*info[1])
+            pattern_1 = CentralVertexNumbering(*info[0], **info[2])
+            pattern_2 = CentralVertexNumbering(*info[1], **info[3])
             self.assertNotEqual(pattern_1, pattern_2)
 
     #-------------------------------------------------------------------------
@@ -175,10 +270,13 @@ class TestCVN(unittest.TestCase):
         ]
 
         for info in test_data:
-            pattern = CentralVertexNumbering(*info[0])
+            pattern = CentralVertexNumbering(
+                *info[0][:3], left_len=info[0][3], right_len=info[0][4])
             pattern.zip(inplace=True)
 
-            expected = CentralVertexNumbering(*info[1])
+            expected = CentralVertexNumbering(
+                *info[1][:3], left_len=info[1][3], right_len=info[1][4])
+
             self.assertEqual(pattern, expected)
 
     def test_substitute(self):
@@ -199,9 +297,11 @@ class TestCVN(unittest.TestCase):
         ]
 
         for info in test_data:
-            pattern = CentralVertexNumbering(*info[1])
+            pattern = CentralVertexNumbering(
+                *info[1][:3], left_len=info[1][3], right_len=info[1][4])
             pattern.substitute(**info[0], inplace=True)
-            expected = CentralVertexNumbering(*info[2])
+            expected = CentralVertexNumbering(
+                *info[2][:3], left_len=info[2][3], right_len=info[2][4])
             self.assertEqual(pattern, expected)
 
         # only substitute in sequences
@@ -227,9 +327,11 @@ class TestCVN(unittest.TestCase):
         ]
 
         for info in test_data:
-            pattern = CentralVertexNumbering(*info[1])
+            pattern = CentralVertexNumbering(
+                *info[1][:3], left_len=info[1][3], right_len=info[1][4])
             pattern.substitute(**info[0], inplace=True, only_sequences=True)
-            expected = CentralVertexNumbering(*info[2])
+            expected = CentralVertexNumbering(
+                *info[2][:3], left_len=info[2][3], right_len=info[2][4])
             self.assertEqual(pattern, expected)
 
         # errors with default <ntuple_index>
@@ -248,7 +350,8 @@ class TestCVN(unittest.TestCase):
         ]
 
         for info in test_data:
-            seq = CentralVertexNumbering(*info[1])
+            seq = CentralVertexNumbering(
+                *info[1][:3], left_len=info[1][3], right_len=info[1][4])
             self.assertRaises(ValueError, seq.substitute, **info[0])
 
         # errors with custom <ntuple_index>
@@ -266,10 +369,11 @@ class TestCVN(unittest.TestCase):
         ]
 
         for info in test_data:
-            args = list(info[1])
+            args = list(info[1][:3])
             args[1] = NTermRecursionSequence(*info[1][1], ntuple_index='j')
             args[2] = NTermRecursionSequence(*info[1][2], ntuple_index='j')
-            seq = CentralVertexNumbering(*args)
+            seq = CentralVertexNumbering(
+                *args, left_len=info[1][3], right_len=info[1][4])
             self.assertRaises(ValueError, seq.substitute, **info[0])
 
     def test_substitute_recursive(self):
@@ -279,8 +383,8 @@ class TestCVN(unittest.TestCase):
             # /init formulas/
             # /result
             ({'a': 'b', 'b': 'c'},
-             ('a', ('a', 'b', 'c'), ('c', 'a', 'b'), 'b', 'c'),
-             ('c', ('c', 'c', 'c'), ('c', 'c', 'c'), 'c', 'c')),
+             ('a', ('a', 'b', 'c'), ('c', 'a', 'b'),    'b',    'c'),
+             ('c', ('c', 'c', 'c'), ('c', 'c', 'c'),    'c',    'c')),
 
             ({'a': 'b', 'b': 'c'},
              ('a', ('a+b', 'b+a'),  ('2a+b', '2b+a'),   'a-b',  'a-2b'),
@@ -290,21 +394,19 @@ class TestCVN(unittest.TestCase):
              ('a', ('a+b', 'b+a'),  ('2a+b', '2b+a'),   'a-b',  'a-2b'),
              ('d', ('2d', '2d'),    ('3d', '3d'),       '0',    '-d')),
 
-            ({'a': 'c', 'b': 'c', 'c': 'd'},
-             ('a', ('a+b', 'b+a'),  ('2a+b', '2b+a')),
-             ('d', ('2d', '2d'),    ('3d', '3d'))),
-
             ({'n': 'k', 'k': 't', 't': 1},
-             ('2n', ('i', '2i+k'),  ('2n', 'n+2'),  'k',    'k+1'),
-             (2,    ('i', '2i+1'),  (2, 3),         1,      2)),
+             ('2n', ('i', '2i+k'),  ('2n', 'n+2'),      'k',    'k+1'),
+             (2,    ('i', '2i+1'),  (2, 3),             1,      2)),
         ]
 
         for info in test_data:
-            pattern = CentralVertexNumbering(*info[1])
+            pattern = CentralVertexNumbering(
+                *info[1][:3], left_len=info[1][3], right_len=info[1][4])
             pattern.substitute(**info[0], recursive=True, inplace=True)
             pattern.zip(inplace=True)
 
-            expected = CentralVertexNumbering(*info[2]).zip()
+            expected = CentralVertexNumbering(
+                *info[2][:3], left_len=info[2][3], right_len=info[2][4]).zip()
 
             self.assertEqual(pattern, expected)
 
@@ -319,13 +421,15 @@ class TestCVN(unittest.TestCase):
             (('a', ('i', '2i'),         ('3i', '2i', 'i'),  'b', 'a'),
              ('a', ('3i', '2i', 'i'),   ('i', '2i'),        'a', 'b')),
 
-            (('2n', ('i', 'i-j'),   ('i+j', 'i-1'), '3c'        ),
-             ('2n', ('i+j', 'i-1'), ('i', 'i-j'),   'inf',  '3c')),
+            (('2n', ('i', 'i-j'),   ('i+j', 'i-1'), '3c', '4d'),
+             ('2n', ('i+j', 'i-1'), ('i', 'i-j'),   '4d', '3c')),
         ]
 
         for info in test_data:
-            pattern = CentralVertexNumbering(*info[0])
-            expected = CentralVertexNumbering(*info[1])
+            pattern = CentralVertexNumbering(
+                *info[0][:3], left_len=info[0][3], right_len=info[0][4])
+            expected = CentralVertexNumbering(
+                *info[1][:3], left_len=info[1][3], right_len=info[1][4])
 
             pattern.reverse(inplace=True)
             self.assertEqual(pattern, expected)
@@ -333,24 +437,45 @@ class TestCVN(unittest.TestCase):
     def test_set_lengths(self):
 
         test_data = [
-            # init args
+            # init formulas
             (4,     ('i', '2i'),    ('2i', 'i'),    3,      3       ),
             ('2n',  ('i', '2i'),    ('2i', 'i'),    '2k',   '2k + 1'),
-            (4,     ('i', '2i'),    ('2i', 'i')),
-        ]
-
-        lengths = [
-            (5, 8), ('2k', '3k'), ('2n', 7),
-            (LinearFormula(3), LinearFormula(6))
+            (4,     ('i', '2i'),    ('2i', 'i'),    '2n',   7       ),
         ]
 
         for args in test_data:
-            pattern = CentralVertexNumbering(*args)
+            pattern = CentralVertexNumbering(*args[:3])
+            expected = CentralVertexNumbering(
+                *args[:3], left_len=args[3], right_len=args[4])
 
-            for l_len, r_len in lengths:
-                pattern.set_lengths(l_len, r_len, inplace=True)
-                self.assertEqual(pattern.left_len, LinearFormula(l_len))
-                self.assertEqual(pattern.right_len, LinearFormula(r_len))
+            pattern.set_lengths(args[3], args[4], inplace=True)
+            self.assertEqual(pattern, expected)
+            self.assertEqual(pattern.left_seq.length, LinearFormula(args[3]))
+            self.assertEqual(pattern.right_seq.length, LinearFormula(args[4]))
+
+    def test_set_ntuple_index(self):
+
+        center = 4
+        left_args = ('i', '2i', '3i')
+        right_args = ('2i', '-2i', 'i')
+
+        left_seq = NTermRecursionSequence(*left_args)
+        right_seq = NTermRecursionSequence(*right_args)
+
+        pattern = CentralVertexNumbering(
+            center, left_args, right_args)
+        expected = CentralVertexNumbering(
+            center, left_args, right_args, ntuple_index='j')
+
+        pattern.set_ntuple_index('j', inplace=True)
+
+        self.assertEqual(pattern, expected)
+        self.assertEqual(pattern.ntuple_index, 'j')
+
+        self.assertEqual(
+            pattern.left_seq, left_seq.set_ntuple_index('j'))
+        self.assertEqual(
+            pattern.right_seq, right_seq.set_ntuple_index('j'))
 
     #-------------------------------------------------------------------------
 
@@ -379,7 +504,7 @@ class TestCVN(unittest.TestCase):
             # init args/
             # /(index, value)/
             # /(index, value) cd.
-            ((4, ('i', '2i'), ('2i', 'i'), 3, 3),
+            ((4, ('i', '2i'), ('2i', 'i')),
              (0, 4),    (-1, 0),    (-2, 0),    (-3, 1),    (-4, 2),
              (1, 0),    (2, 0),     (3, 2),     (4, 1),     (5, 4)),
 
@@ -387,15 +512,15 @@ class TestCVN(unittest.TestCase):
              (0, 2),    (1, 0),     (2, 0),     (3, 2),         (4, 1),
              (-1, 'a'), (-2, 0),    (-3, 0),    (-4, 'a + 1'),  (-5, 2)),
 
-            ((4, ('i',), ('2i',), 3, 3),
+            ((4, ('i',), ('2i',)),
              (0, 4),    (1, 0),     (2, 2),     (3, 4),     (4, 6),
              (-1, 0),   (-2, 1),    (-3, 2),    (-4, 3),    (-5, 4)),
 
-            ((4, ('i', 'i'), ('2i', '2i'), 3, 3),
+            ((4, ('i', 'i'), ('2i', '2i')),
              (0, 4),    (1, 0),     (2, 0),     (3, 2),     (4, 2),
              (-1, 0),   (-2, 0),    (-3, 1),    (-4, 1),    (-5, 2)),
 
-            (('2n', ('3', '2'), ('a', 'i'), 3, 3),
+            (('2n', ('3', '2'), ('a', 'i')),
              (0, '2n'), (1, 'a'),   (2, 0),     (3, 'a'),   (4, 1),
              (-1, 3),   (-2, 2),    (-3, 3),    (-4, 2),    (-5, 3)),
         ]
@@ -421,7 +546,13 @@ class TestCVN(unittest.TestCase):
         ]
 
         for info in test_data:
-            pattern = CentralVertexNumbering(*info[0])
+            args = info[0][:3]
+            kwargs = {}
+            if len(info[0]) > 3:
+                kwargs['left_len'] = info[0][3]
+                kwargs['right_len'] = info[0][4]
+
+            pattern = CentralVertexNumbering(*args, **kwargs)
 
             # don't omit anything
             self.assertEqual(pattern.get_variables(), info[1])
@@ -453,89 +584,11 @@ class TestCVN(unittest.TestCase):
         ]
 
         for info in test_data:
-            pattern = CentralVertexNumbering(*info[0])
+            pattern = CentralVertexNumbering(
+                *info[0][:3], left_len=info[0][3], right_len=info[0][4])
             self.assertEqual(pattern.get_variables(omit_zeros=True), info[1])
 
-    def test_ntuple_index_inequality(self):
-
-        test_data = [
-            # n     length
-            (3,     'l',
-             # no_formula\no_last_formula
-             (('3i <= l-1', '3i <= l-2', '3i <= l-3'),
-              ('3i <= l-4', '3i <= l-2', '3i <= l-3'),
-              ('3i <= l-4', '3i <= l-5', '3i <= l-3'),)),
-            # n     length
-            (3,     'l',
-             # no_formula\no_last_formula
-             (('3i+1 <= l',     '3i+1 <= l-1',  '3i+1 <= l-2'),
-              ('3i+2 <= l-2',   '3i+2 <= l',    '3i+2 <= l-1'),
-              ('3i+3 <= l-1',   '3i+3 <= l-2',  '3i+3 <= l'),)),
-            # n     length
-            (4,     'l',
-             # no_formula\no_last_formula
-             (('4i+1 <= l',   '4i+1 <= l-1', '4i+1 <= l-2', '4i+1 <= l-3'),
-              ('4i+2 <= l-3', '4i+2 <= l',   '4i+2 <= l-1', '4i+2 <= l-2'),
-              ('4i+3 <= l-2', '4i+3 <= l-3', '4i+3 <= l',   '4i+3 <= l-1'),
-              ('4i+4 <= l-1', '4i+4 <= l-2', '4i+4 <= l-3', '4i+4 <= l'),)),
-        ]
-
-        for info in test_data:
-            n = info[0]
-            length = info[1]
-            pattern = CentralVertexNumbering(1, n*[1], n*[1], length, length)
-            for no_f in range(n):
-                for no_last_f in range(n):
-
-                    expected = LinearRelation(info[2][no_f][no_last_f])
-                    actual = pattern.get_ntuple_index_inequality(
-                        side='left',
-                        no_formula=no_f,
-                        no_last_formula=no_last_f
-                    )
-                    self.assertTrue(expected.equivalent(actual))
-                    actual = pattern.get_ntuple_index_inequality(
-                        side='right',
-                        no_formula=no_f,
-                        no_last_formula=no_last_f
-                    )
-                    self.assertTrue(expected.equivalent(actual))
-
-        test_data = [
-            # n     inequalities
-            #   length
-            (3, 3,  ('i <= 0', 'i <= 0', 'i <= 0')),
-            (3, 4,  ('i <= 1', 'i <= 0', 'i <= 0')),
-            (3, 5,  ('i <= 1', 'i <= 1', 'i <= 0')),
-            (3, 6,  ('i <= 1', 'i <= 1', 'i <= 1')),
-            (3, 7,  ('i <= 2', 'i <= 1', 'i <= 1')),
-            (4, 4,  ('i <= 0', 'i <= 0', 'i <= 0', 'i <= 0')),
-            (4, 6,  ('i <= 1', 'i <= 1', 'i <= 0', 'i <= 0')),
-            (4, 9,  ('i <= 2', 'i <= 1', 'i <= 1', 'i <= 1')),
-            (5, 12, ('i <= 2', 'i <= 2', 'i <= 1', 'i <= 1', 'i <= 1')),
-        ]
-
-        for info in test_data:
-            n = info[0]
-            length = info[1]
-            pattern = CentralVertexNumbering(1, n*[1], n*[1], length, length)
-            for no_f in range(n):
-                no_last_f = (length - 1) % n
-                expected = LinearRelation(info[2][no_f])
-                actual = pattern.get_ntuple_index_inequality(
-                    side='left',
-                    no_formula=no_f,
-                    no_last_formula=no_last_f
-                )
-                self.assertTrue(expected.equivalent(actual))
-                actual = pattern.get_ntuple_index_inequality(
-                    side='right',
-                    no_formula=no_f,
-                    no_last_formula=no_last_f
-                )
-                self.assertTrue(expected.equivalent(actual))
-
-    def test_get_edges(self):
+    def test_get_edge(self):
 
         test_data = [
             ((1, (1, 1, 1), (1, 1)),
@@ -554,40 +607,46 @@ class TestCVN(unittest.TestCase):
             center_left = LinearFormula(info[1][0])
             center_right = LinearFormula(info[1][1])
 
-            left = [LinearFormula(string).zip() for string in info[1][2]]
-            right = [LinearFormula(string).zip() for string in info[1][3]]
+            left = info[1][2]
+            right = info[1][3]
 
-            result = pattern.get_edges()
+            self.assertEqual(
+                pattern.get_edge('left', 'center').zip(), center_left)
+            self.assertEqual(
+                pattern.get_edge('right', 'center').zip(), center_right)
 
-            self.assertEqual(result['center left'], center_left)
-            self.assertEqual(result['center right'], center_right)
-            self.assertEqual(result['left'], left)
-            self.assertEqual(result['right'], right)
+            for i in range(len(left)):
+                self.assertEqual(
+                    pattern.get_edge('left', i).zip(),
+                    LinearFormula(left[i])
+                )
+
+            for i in range(len(right)):
+                self.assertEqual(
+                    pattern.get_edge('right', i).zip(),
+                    LinearFormula(right[i])
+                )
+
             self.assertEqual(pattern, ctrl_pattern)
 
             # test with custom ntuple indices
-            formulas = []
-            for formula in info[0][1]:
-                formulas.append(LinearFormula(formula).substitute(i='p'))
-            left_seq = NTermRecursionSequence(*formulas, ntuple_index='p')
+            pattern = CentralVertexNumbering(*info[0], ntuple_index='j')
 
-            formulas = []
-            for formula in info[0][2]:
-                formulas.append(LinearFormula(formula).substitute(i='q'))
-            right_seq = NTermRecursionSequence(*formulas, ntuple_index='q')
-
-            pattern = CentralVertexNumbering(info[0][0], left_seq, right_seq)
+            self.assertEqual(
+                pattern.get_edge('left', 'center').zip(), center_left)
+            self.assertEqual(
+                pattern.get_edge('right', 'center').zip(), center_right)
 
             for i in range(len(left)):
-                left[i].substitute(i='p', inplace=True)
+                self.assertEqual(
+                    pattern.get_edge('left', i).zip(),
+                    LinearFormula(left[i]).substitute(i='j')
+                )
 
             for i in range(len(right)):
-                right[i].substitute(i='q', inplace=True)
-
-            result = pattern.get_edges()
-            self.assertEqual(result['center left'], center_left)
-            self.assertEqual(result['center right'], center_right)
-            self.assertEqual(result['left'], left)
-            self.assertEqual(result['right'], right)
+                self.assertEqual(
+                    pattern.get_edge('right', i).zip(),
+                    LinearFormula(right[i]).substitute(i='j')
+                )
 
     #-------------------------------------------------------------------------

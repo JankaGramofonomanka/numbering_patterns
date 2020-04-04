@@ -22,72 +22,103 @@ class CentralVertexNumbering():
     def __init__(self, *args, **kwargs):
         """Initializes the pattern"""
 
-        # either args or kwargs
-        if len(args) > 0 and len(kwargs) > 0:
-            raise TypeError(
-                'this method can use either positional or keyword arguments')
+        # init with other pattern
+        if len(args) == 1:
+            other_pattern = args[0]
+            if type(other_pattern) != CentralVertexNumbering:
+                raise TypeError('the argument is not a sequence')
 
-        # init with another pattern
-        if len(args) == 1 and type(args[0]) == CentralVertexNumbering:
-            CentralVertexNumbering.__init__(
-                self, args[0].center, args[0].left_seq, args[0].right_seq,
-                args[0].left_len, args[0].right_len)
-
-        # init with positional args
-        elif len(args) > 1:
+            # try to get data from <kwargs>
             try:
-                l_len = args[3]
-            except IndexError:
-                l_len = 'inf'
+                ntuple_index = kwargs['ntuple_index']
+            except KeyError:
+                ntuple_index = other_pattern.ntuple_index
 
             try:
-                r_len = args[4]
-            except IndexError:
-                r_len = 'inf'
+                left_len = kwargs['left_len']
+            except KeyError:
+                left_len = other_pattern.left_seq.length
 
+            try:
+                right_len = kwargs['right_len']
+            except KeyError:
+                right_len = other_pattern.right_seq.length
+
+            # initialize
             CentralVertexNumbering.__init__(
-                self, center=args[0], left_seq=args[1], right_seq=args[2],
-                l_len=l_len, r_len=r_len)
+                self,
+                other_pattern.center,
+                other_pattern.left_seq,
+                other_pattern.right_seq,
+                ntuple_index=ntuple_index,
+                left_len=left_len,
+                right_len=right_len,
+            )
 
-        # init with keywords
-        else:
+        # init with formulas and sequences
+        elif len(args) == 3:
+            center = args[0]
+            left_seq = args[1]
+            right_seq = args[2]
 
             # central vertex number
-            self.center = LinearFormula(kwargs['center'])
+            self.center = LinearFormula(center)
 
             # left-hand sequence
-            if type(kwargs['left_seq']) in {list, tuple}:
-                self.left_seq = NTermRecursionSequence(*kwargs['left_seq'])
+            if type(left_seq) in {tuple, list}:
+                self.left_seq = NTermRecursionSequence(*left_seq)
             else:
-                self.left_seq = NTermRecursionSequence(kwargs['left_seq'])
+                self.left_seq = NTermRecursionSequence(left_seq)
 
             # right-hand sequence
-            if type(kwargs['right_seq']) in {list, tuple}:
-                self.right_seq = NTermRecursionSequence(*kwargs['right_seq'])
+            if type(right_seq) in {tuple, list}:
+                self.right_seq = NTermRecursionSequence(*right_seq)
             else:
-                self.right_seq = NTermRecursionSequence(kwargs['right_seq'])
+                self.right_seq = NTermRecursionSequence(right_seq)
 
-            # lengths of the sequences
-            if 'l_len' not in kwargs.keys():
-                kwargs['l_len'] = 'inf'
-            if 'r_len' not in kwargs.keys():
-                kwargs['r_len'] = 'inf'
+            # try to get data from <kwargs>
 
-            self.left_len = LinearFormula(kwargs['l_len'])
-            self.right_len = LinearFormula(kwargs['r_len'])
+            # ntuple_index
+            try:
+                ntuple_index = kwargs['ntuple_index']
+                if type(ntuple_index) != str:
+                    raise TypeError(
+                        'the ntuple_index keyword argument must be a string')
 
-            # make sure that any of the <ntuple_index> attributes of the
-            # sequences is not used as a variable by any of the other formulas
-            ntuple_indices = {
-                self.left_seq.ntuple_index, self.right_seq.ntuple_index}
+                self.ntuple_index = ntuple_index
 
-            if (self.center.get_variables() & ntuple_indices != set()
-                or self.left_len.get_variables() & ntuple_indices != set()
-                or self.right_len.get_variables() & ntuple_indices != set()):
+                # set the <ntuple_index> variable in the sequences
+                self.left_seq.set_ntuple_index(ntuple_index, inplace=True)
+                self.right_seq.set_ntuple_index(ntuple_index, inplace=True)
 
+            except KeyError:
+                self.ntuple_index = self.left_seq.ntuple_index
+                try:
+                    self.right_seq.set_ntuple_index(
+                        self.ntuple_index, inplace=True)
+                except ValueError:
+                    raise ValueError("the right sequence uses the left"
+                                     + " sequence's 'ntuple_index' variable")
+
+            if self.ntuple_index in self.center.variables:
                 raise ValueError(
-                    "one of the arguments: center_number, l_len, r_len uses"
-                    + " the left or right sequence's ntuple_index variable")
+                    'the ntuple_index variable is used by the central number')
+
+            # left_len
+            try:
+                self.left_seq.set_length(kwargs['left_len'], inplace=True)
+            except KeyError:
+                pass
+
+            # left_len
+            try:
+                self.right_seq.set_length(kwargs['right_len'], inplace=True)
+            except KeyError:
+                pass
+
+        # raise error if the arguments cannot be interpreted
+        else:
+            raise TypeError('cannot interpret the arguments')
 
     #-------------------------------------------------------------------------
 
@@ -102,9 +133,9 @@ class CentralVertexNumbering():
         string += f'left: {self.left_seq.formulas_str()}, '
         string += f'right: {self.right_seq.formulas_str()}'
 
-        string = 'CVN({ll}|{ls}|<-{li}|{ct}|{ri}->|{rs}|{rl})'.format(
-            ll=str(self.left_len),
-            rl=str(self.right_len),
+        string = 'CVN({ll}<-|{ls}|<-{li}|{ct}|{ri}->|{rs}|->{rl})'.format(
+            ll=str(self.left_seq.length),
+            rl=str(self.right_seq.length),
             li=self.left_seq.ntuple_index,
             ri=self.right_seq.ntuple_index,
             ls=self.left_seq.formulas_str(reversed=True),
@@ -115,11 +146,11 @@ class CentralVertexNumbering():
         return string
 
     def __eq__(self, other):
-        return (self.center == other.center
+        return (
+            self.center == other.center
             and self.left_seq == other.left_seq
             and self.right_seq == other.right_seq
-            and self.left_len == other.left_len
-            and self.right_len == other.right_len)
+        )
 
     #-------------------------------------------------------------------------
 
@@ -133,44 +164,39 @@ class CentralVertexNumbering():
         self.center.zip(inplace=True)
         self.left_seq.zip(inplace=True)
         self.right_seq.zip(inplace=True)
-        self.left_len.zip(inplace=True)
-        self.right_len.zip(inplace=True)
 
     @misc.inplace(default=False)
     def substitute(self, only_sequences=False, recursive=False, **kwargs):
         """Substitutes given variables for given formulas in all formulas
         determining the pattern"""
 
-        if only_sequences == True:
-            self.left_seq.substitute(
-                **kwargs, recursive=recursive, inplace=True)
-            self.right_seq.substitute(
-                **kwargs, recursive=recursive, inplace=True)
-
-        else:
+        if not only_sequences:
             # check if the substitute formulas use one of the <ntuple_index>
             # variables
-            ntuple_indices = {
-                self.left_seq.ntuple_index, self.right_seq.ntuple_index}
-
             for formula in kwargs.values():
                 variables = LinearFormula(formula).get_variables()
-                if variables & ntuple_indices != set():
+                if self.ntuple_index in variables:
                     raise ValueError(
                         "one of the formulas uses left or right sequences'"
                         + " ntuple_index variable,"
-                        + " use the keyword argument: only_sequences=True")
+                        + " use the keyword argument: only_sequences=True"
+                    )
 
             self.center.substitute(
                 **kwargs, recursive=recursive, inplace=True)
-            self.left_seq.substitute(
-                **kwargs, recursive=recursive, inplace=True)
-            self.right_seq.substitute(
-                **kwargs, recursive=recursive, inplace=True)
-            self.left_len.substitute(
-                **kwargs, recursive=recursive, inplace=True)
-            self.right_len.substitute(
-                **kwargs, recursive=recursive, inplace=True)
+
+        self.left_seq.substitute(
+            **kwargs,
+            recursive=recursive,
+            inplace=True,
+            formulas_only=only_sequences
+        )
+        self.right_seq.substitute(
+            **kwargs,
+            recursive=recursive,
+            inplace=True,
+            formulas_only=only_sequences
+        )
 
     @misc.inplace(default=False)
     def reverse(self):
@@ -180,16 +206,24 @@ class CentralVertexNumbering():
         self.left_seq = self.right_seq.copy()
         self.right_seq = temp_seq
 
-        temp_len = self.left_len.copy()
-        self.left_len = self.right_len.copy()
-        self.right_len = temp_len
-
     @misc.inplace(default=False)
     def set_lengths(self, l_len, r_len):
         """Sets the lengths of the left and right sequences"""
 
-        self.left_len = LinearFormula(l_len)
-        self.right_len = LinearFormula(r_len)
+        self.left_seq.set_length(LinearFormula(l_len), inplace=True)
+        self.right_seq.set_length(LinearFormula(r_len), inplace=True)
+
+    @misc.inplace(default=False)
+    def set_ntuple_index(self, variable):
+        if type(variable) != str:
+            raise TypeError('the argument must be a string')
+
+        if variable in self.center.variables:
+            raise ValueError(f'the variable: {variable} is already used')
+
+        self.left_seq.set_ntuple_index(variable, inplace=True)
+        self.right_seq.set_ntuple_index(variable, inplace=True)
+        self.ntuple_index = variable
 
     #-------------------------------------------------------------------------
 
@@ -225,8 +259,7 @@ class CentralVertexNumbering():
 
     def copy(self):
         """Returns a copy of <self>"""
-        return CentralVertexNumbering(self.center, self.left_seq,
-            self.right_seq, self.left_len, self.right_len)
+        return CentralVertexNumbering(self)
 
     def evaluate(self, index):
         """Returns: the <index>-th right number if <index> > 0,
@@ -252,73 +285,36 @@ class CentralVertexNumbering():
         result |= self.right_seq.get_variables(
             omit_zeros=omit_zeros, global_only=global_only)
 
-        if self.left_len != LinearFormula('inf'):
-            result |= self.left_len.get_variables(omit_zeros=omit_zeros)
-
-        if self.right_len != LinearFormula('inf'):
-            result |= self.right_len.get_variables(omit_zeros=omit_zeros)
-
         return result
 
-    def get_ntuple_index_inequality(self, side, no_formula, no_last_formula):
-        """Returns an inequality relation between the <ntuple_index> variable
-        of the <no_formula>-th formula of the left or right sequence, and the
-        length of that sequence, given that the last formula in that sequence
-        is it's <no_last_formula>-th formula"""
+    def get_edge(self, side, key):
+        """Returns a value assigned to the chosen edge of the graph based on
+        the vertex numbering"""
+
+        if type(key) not in {int, str}:
+            raise TypeError(f'invalid key type: {key}')
 
         if side == 'left':
             seq = self.left_seq
-            length = self.left_len
         elif side == 'right':
             seq = self.right_seq
-            length = self.right_len
         else:
-            raise ValueError("the 'side' argument must be 'left' or 'right'")
+            raise ValueError("the side argument must be 'left' or 'right'")
 
-        if not (0 <= no_formula < seq.n and 0 <= no_last_formula < seq.n):
-            raise ValueError("the 'no_formula' and 'no_last_formula'"
-                             + " arguments must be in [0, ..., n)")
+        if key in range(seq.n - 1):
+            return seq.formulas[key] + seq.formulas[key + 1]
 
-        left = LinearFormula(f'{seq.n}i + {no_formula} + 1')
-        left.substitute(i=seq.ntuple_index, inplace=True)
+        elif key == seq.n - 1:
 
-        if no_last_formula >= no_formula:
-            right = length - no_last_formula + no_formula
+            this_formula = seq.formulas[key]
+            next_formula = seq.formulas[0].substitute(
+                **{self.ntuple_index: f'{self.ntuple_index} + 1'})
+
+            return this_formula + next_formula
+
+        elif key == 'center':
+            return self.center + seq.evaluate(0)
         else:
-            right = length - seq.n - no_last_formula + no_formula
+            raise ValueError(f'invalid key value: {key}')
 
-        return LinearRelation(left, right, relation='<=').zip()
-
-    def get_edges(self):
-        """Returns values assigned to edges of the graph based on the vertex
-        numbering"""
-
-        result = {}
-
-        result['center right'] = self.center + self.evaluate(1)
-        result['center right'].zip(inplace=True)
-
-        result['center left'] = self.center + self.evaluate(-1)
-        result['center left'].zip(inplace=True)
-
-        temp_dict = {'left': self.left_seq, 'right': self.right_seq}
-        for side, seq in temp_dict.items():
-            result[side] = seq.n*[0]
-
-            for i in range(seq.n - 1):
-                result[side][i] = seq.formulas[i] + seq.formulas[i + 1]
-                result[side][i].zip(inplace=True)
-
-            # generate the last edge
-            next_formula = seq.formulas[0].copy()
-            ntuple_index = seq.ntuple_index
-            next_ntuple_index = LinearFormula(ntuple_index) + 1
-
-            kwargs = {ntuple_index: next_ntuple_index}
-            next_formula.substitute(**kwargs, inplace=True)
-
-            result[side][seq.n - 1] = seq.formulas[seq.n - 1] + next_formula
-            result[side][seq.n - 1].zip(inplace=True)
-
-        return result
     #-------------------------------------------------------------------------
