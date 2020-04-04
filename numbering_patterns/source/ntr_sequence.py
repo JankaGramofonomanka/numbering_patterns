@@ -245,8 +245,9 @@ class NTermRecursionSequence():
         that the current formula is the <no_formula>-th formula, if such
         bound can be determined"""
 
+        no_last_formula = (self.get_length_mod_n() - 1) % self.n
         relation = self.get_ntuple_index_inequality(
-            no_formula, self.get_length_mod_n() - 1)
+            no_formula, no_last_formula)
 
         relation.expose(self.ntuple_index, inplace=True)
         if relation.relation != '<=':
