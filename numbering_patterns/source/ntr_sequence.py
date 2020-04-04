@@ -260,5 +260,26 @@ class NTermRecursionSequence():
 
         return relation.right
 
+    def get_edge(self, key):
+        """Returns a value assigned to the chosen edge of the graph based on
+        the vertex numbering"""
+
+        if type(key) not in {int, str}:
+            raise TypeError(f'invalid key type: {key}')
+
+        if key in range(self.n - 1):
+            return self.formulas[key] + self.formulas[key + 1]
+
+        elif key == self.n - 1:
+            # the ntuple index is incremented in the next formula
+            this_formula = self.formulas[key]
+            next_formula = self.formulas[0].substitute(
+                **{self.ntuple_index: f'{self.ntuple_index} + 1'})
+
+            return this_formula + next_formula
+
+        else:
+            raise ValueError(f'invalid key value: {key}')
+
     #-------------------------------------------------------------------------
 

@@ -291,9 +291,6 @@ class CentralVertexNumbering():
         """Returns a value assigned to the chosen edge of the graph based on
         the vertex numbering"""
 
-        if type(key) not in {int, str}:
-            raise TypeError(f'invalid key type: {key}')
-
         if side == 'left':
             seq = self.left_seq
         elif side == 'right':
@@ -301,19 +298,14 @@ class CentralVertexNumbering():
         else:
             raise ValueError("the side argument must be 'left' or 'right'")
 
-        if key in range(seq.n - 1):
-            return seq.formulas[key] + seq.formulas[key + 1]
-
-        elif key == seq.n - 1:
-
-            this_formula = seq.formulas[key]
-            next_formula = seq.formulas[0].substitute(
-                **{self.ntuple_index: f'{self.ntuple_index} + 1'})
-
-            return this_formula + next_formula
+        if type(key) == int:
+            return seq.get_edge(key)
 
         elif key == 'center':
             return self.center + seq.evaluate(0)
+
+        elif type(key) != str:
+            raise TypeError(f'invalid key type: {key}')
         else:
             raise ValueError(f'invalid key value: {key}')
 

@@ -482,4 +482,28 @@ class TestNTRSequence(unittest.TestCase):
                 actual = seq.get_ntuple_index_bound(no_formula=no_f)
                 self.assertEqual(expected, actual)
 
+    def test_get_edge(self):
+
+        test_data = [
+            ((1, 1, 1), [2, 2, 2]),
+
+            (('i', 'i+1', 'i+2'), ['2i+1', '2i+3', '2i+3']),
+
+            (('i-1', 'i-2'), ['2i-3', '2i-2']),
+        ]
+
+        for info in test_data:
+
+            # test with default ntuple index
+            seq = NTermRecursionSequence(*info[0])
+            ctrl_seq = NTermRecursionSequence(*info[0])
+
+            for i in range(seq.n):
+                self.assertEqual(
+                    seq.get_edge(i).zip(),
+                    LinearFormula(info[1][i])
+                )
+
+            self.assertEqual(seq, ctrl_seq)
+
     #-------------------------------------------------------------------------
