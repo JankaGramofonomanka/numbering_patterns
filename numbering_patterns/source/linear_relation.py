@@ -126,8 +126,12 @@ class LinearRelation():
                 raise ValueError(
                     "you can't subtract two relations of different types")
 
-            self.left -= other.left
-            self.right -= other.right
+            if self.relation == '==':
+                self.left -= other.left
+                self.right -= other.right
+            else:
+                self.left -= other.right
+                self.right -= other.left
 
         else:
             self.left -= other

@@ -220,25 +220,25 @@ class TestLinearRelation(unittest.TestCase):
              'a + b == c + d',            # sum
              'a - b == c - d'),           # difference
 
-            ('a == b',          'a == b',
-             'a + a == b + b',
-             'a - a == b - b'),
+            ('a == b',          'c == d',
+             'a + c == b + d',
+             'a - c == b - d'),
 
-            ('a <= b',          'a <= b',
-             'a + a <= b + b',
-             'a - a <= b - b'),
+            ('a <= b',          'c <= d',
+             'a + c <= b + d',
+             'a - d <= b - c'),
 
-            ('a >= b',          'a >= b',
-             'a + a >= b + b',
-             'a - a >= b - b'),
+            ('a >= b',          'c >= d',
+             'a + c >= b + d',
+             'a - d >= b - c'),
 
-            ('a < b',           'a < b',
-             'a + a < b + b',
-             'a - a < b - b'),
+            ('a < b',           'c < d',
+             'a + c < b + d',
+             'a - d < b - c'),
 
-            ('a > b',           'a > b',
-             'a + a > b + b',
-             'a - a > b - b'),
+            ('a > b',           'c > d',
+             'a + c > b + d',
+             'a - d > b - c'),
         ]
 
         for info in test_data:
