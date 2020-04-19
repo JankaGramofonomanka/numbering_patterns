@@ -40,7 +40,11 @@ and v_0 is chosen to be the central vertex
 
 
 ## Example usage of ```LinearFormula```
-### 1. Initialization:
+### 0. Import
+```
+from numbering_patterns import LinearFormula
+```
+### 1. Initialization
 ```
 >>> LinearFormula('a + 3b - 4c')
 a + 3b - 4c
@@ -206,6 +210,10 @@ a + 3b - 4c
 
 
 ## Example usage of ```LinearRelation```
+### 0. Import
+```
+from numbering_patterns import LinearRelation
+```
 ### 1. Initialization
 ```
 >>> LinearRelation('a', 'b')
