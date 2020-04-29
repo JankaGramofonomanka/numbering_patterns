@@ -139,7 +139,7 @@ class TestOther(unittest.TestCase):
             should_be_formula_1 = multiplier*formula_2 + formula_3
             self.assertTrue(formula_1.equivalent(should_be_formula_1))
 
-    def test_get_bounds(self):
+    def test_get_bounds_no_order(self):
 
         test_data = [
             # formula                       upper bounds         upper bound
@@ -148,7 +148,7 @@ class TestOther(unittest.TestCase):
             ('a+b',     {'a': 'b'},         {'a': 'c'}, '2b',    'c+b'      ),
             ('2a',      {'a': 'b'},         {'a': 'c'}, '2b',    '2c'       ),
             ('-a',      {'a': 'b'},         {'a': 'c'}, '-c',    '-b'       ),
-            ('a+3b-4c', {'a': 'b', 'c': 2}, {'b': 'c'}, '4b-4c', 'a+3c-8'   ),
+            ('a+3b-4c', {'a': 'b', 'c': 2}, {'b': 'd'}, '4b-4c', 'a+3d-8'   ),
             ('a',       {'a': 1},           {'a': 2},   1,       2          ),
             ('a+b',     {'a': 1},           {'b': 2},   '1+b',   'a+2'      ),
         ]
@@ -160,6 +160,7 @@ class TestOther(unittest.TestCase):
             expected_lower_bound = LinearFormula(info[3])
             expected_upper_bound = LinearFormula(info[4])
 
+            # no order
             result = formula.get_bounds(
                 lower_bounds=lower_bounds,
                 upper_bounds=upper_bounds,
@@ -201,6 +202,7 @@ class TestOther(unittest.TestCase):
              {'a': 'f', 'f': 'g', 'b': 'f', 'c': 'g'},
              {'a': 'b', 'b': 'c', 'c': 'd', 'd': 'e'},
              '3g+d', '4e'),
+
         ]
 
         for info in test_data:
@@ -214,6 +216,114 @@ class TestOther(unittest.TestCase):
                 lower_bounds=lower_bounds,
                 upper_bounds=upper_bounds,
                 recursive=True
+            )
+
+            actual_lower_bound = result[0]
+            actual_upper_bound = result[1]
+
+            self.assertEqual(
+                actual_lower_bound.zip(), expected_lower_bound.zip())
+            self.assertEqual(
+                actual_upper_bound.zip(), expected_upper_bound.zip())
+
+
+    def test_get_bounds_order(self):
+
+        test_data = [
+            ('a',  # formula
+             {'a': 'b', 'b': 'c'},  # lower bounds
+             {'a': 'd', 'd': 'e'},  # upper bounds
+             ['a', 'b', 'd'],       # order
+             # lower bound      upper bound
+             'c', 'e'),
+
+            ('a+b',
+             {'a': 'b', 'b': 'c'},  # <=
+             {'a': 'd', 'd': 'e'},  # >=
+             ['a', 'b', 'd'],
+             '2c', 'e+b'),
+
+            ('a+b',
+             {'a': 'd', 'd': 'e'},  # <=
+             {'a': 'b', 'b': 'c'},  # >=
+             ['a', 'b', 'd'],
+             'e+b', '2c'),
+
+            ('a+b+c+d',
+             {'a': 'b', 'b': 'c', 'c': 'd', 'd': 'e'},  # <=
+             {'a': 'f', 'f': 'g', 'b': 'f', 'c': 'g'},  # >=
+             ['a', 'b', 'c', 'd', 'f', 'g'],
+             '4e', '3g+d'),
+
+            ('a+b+c+d',
+             {'a': 'f', 'f': 'g', 'b': 'f', 'c': 'g'},  # <=
+             {'a': 'b', 'b': 'c', 'c': 'd', 'd': 'e'},  # >=
+             ['a', 'b', 'c', 'd', 'f', 'g'],
+             '3g+d', '4e'),
+
+            ('a',
+             {'a': 'b'},    # <=
+             {'a': 'c'},    # >=
+             ['a'],
+             'b', 'c'),
+
+            ('a+b',
+             {'a': 'b'},    # <=
+             {'a': 'c'},    # >=
+             ['a'],
+             '2b', 'c+b'),
+
+            ('2a',
+             {'a': 'b'},    # <=
+             {'a': 'c'},    # >=
+             ['a'],
+             '2b', '2c'),
+
+            ('-a',
+             {'a': 'b'},    # <=
+             {'a': 'c'},    # >=
+             ['a'],
+             '-c', '-b'),
+
+            ('a+3b-4c',
+             {'a': 'b', 'c': 2},    # <=
+             {'b': 'c'},            # >=
+             ['a', 'b', 'c'],
+             '4b-4c', 'a-2'),
+
+            ('a',
+             {'a': 1},  # <=
+             {'a': 2},  # >=
+             ['a'],
+             1, 2),
+
+            ('a+b',
+             {'a': 1},  # <=
+             {'b': 2},  # >=
+             ['a', 'b'],
+             '1+b', 'a+2'),
+
+            ('a - b + c',
+             {'a': 'c + d', 'c': 'd', 'd': 'f', 'b': 'f'},  # <=
+             {'a': 'c - b', 'b': '-f'},                     # >=
+             ['a', 'b', 'c', 'd'],
+             '4f', '2c-2f')
+
+        ]
+
+        for info in test_data:
+            formula = LinearFormula(info[0])
+            lower_bounds = info[1]
+            upper_bounds = info[2]
+            expected_lower_bound = LinearFormula(info[4])
+            expected_upper_bound = LinearFormula(info[5])
+            order = info[3]
+
+            # test get_bounds
+            result = formula.get_bounds(
+                lower_bounds=lower_bounds,
+                upper_bounds=upper_bounds,
+                order=order
             )
 
             actual_lower_bound = result[0]

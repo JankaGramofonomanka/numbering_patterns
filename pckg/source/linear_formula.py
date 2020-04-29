@@ -619,9 +619,28 @@ class LinearFormula():
 
         return (multiplier, this)
 
-    def get_bounds(self, lower_bounds={}, upper_bounds={}, recursive=False):
+    def get_bounds(
+            self, lower_bounds={}, upper_bounds={},
+            order=None, recursive=False
+    ):
+
+        if recursive == True and order is not None:
+            raise ValueError(
+                "The 'recursive' argument cannot be True "
+                + "when 'order' is specified"
+            )
+
+        elif order is None:
+            return self._get_bounds_no_order(
+                lower_bounds, upper_bounds, recursive)
+
+        else:
+            return self._get_bounds_order(lower_bounds, upper_bounds, order)
+
+    def _get_bounds_no_order(
+            self, lower_bounds={}, upper_bounds={}, recursive=False):
         """Returns a tuple (l_bound, u_bound) such that
-        l_bound <= <self> <= r_bound, given the bounds of the variables"""
+        l_bound <= <self> <= u_bound, given the bounds of the variables"""
 
         if type(upper_bounds) != dict or type(lower_bounds) != dict:
             raise TypeError('arguments are should be dictionaries')
@@ -635,10 +654,10 @@ class LinearFormula():
         # we will use the <substitute> method to get the lower and upper
         # bounds, therefore we need to chose which given bound goes where
 
-        # for example if the formula is 'a - b' and the upper bound of 'b' is
-        # 5, then we will get the lower bound of the formula by substituting
-        # 'b' for 5, but if the formula is 'a + b', then the aforemention
-        # operation will give us the upper bound
+        # for example if the formula is 'a + b' and the upper bound of 'b' is
+        # 5, then we will get the upper bound of the formula by substituting
+        # 'b' for 5, but if the formula is 'a - b', then the aforementioned
+        # operation will give us the lower bound
         zipped._prepare_kwargs_for_get_bounds(
             lower_kwargs, lower_bounds, 'lower', 'lower')
         zipped._prepare_kwargs_for_get_bounds(
@@ -648,8 +667,8 @@ class LinearFormula():
         zipped._prepare_kwargs_for_get_bounds(
             upper_kwargs, upper_bounds, 'upper', 'upper')
 
-        lower_bound = self.substitute(**lower_kwargs)
-        upper_bound = self.substitute(**upper_kwargs)
+        lower_bound = self.substitute(**lower_kwargs).zip()
+        upper_bound = self.substitute(**upper_kwargs).zip()
 
         if recursive == True:
             calculate_lower = True
@@ -673,6 +692,7 @@ class LinearFormula():
                         calculate_lower = False
 
                     lower_bound.substitute(**lower_kwargs, inplace=True)
+                    lower_bound.zip(inplace=True)
 
                 if calculate_upper:
                     upper_kwargs = {}
@@ -691,6 +711,7 @@ class LinearFormula():
                         calculate_upper = False
 
                     upper_bound.substitute(**upper_kwargs, inplace=True)
+                    upper_bound.zip(inplace=True)
 
         return (lower_bound, upper_bound)
 
@@ -714,6 +735,94 @@ class LinearFormula():
                 kwargs[var] = bound
             elif mul <= 0 and arg_type != result_type:
                 kwargs[var] = bound
+
+    def _get_bounds_order(self, lower_bounds, upper_bounds, order):
+        """Substitutes variables for their bounds given in <lower_bounds> and
+        <upper_bounds>, in order specified by <order> to return a tuple
+        (l_bound, u_bound) such that l_bound <= <self> <= u_bound"""
+
+        # <lower_bounds>, <upper_bounds> - dicts representing bounds of
+        # individual variables, in a form {variable: bound}
+
+        # <order> - a list representing the order in which to substitute the
+        # variables
+
+        upper_bound = self.zip()
+        lower_bound = upper_bound.copy()
+
+        for variable in order:
+
+            # get the bounds of <variables>
+            try:
+                variable_lower_bound = lower_bounds[variable]
+            except KeyError:
+                variable_lower_bound = None
+
+            try:
+                variable_upper_bound = upper_bounds[variable]
+            except KeyError:
+                variable_upper_bound = None
+
+            # and use them to get the bounds of <self>
+            lower_bound._process_variable_bound(
+                variable, 'lower',
+                lower_bound=variable_lower_bound,
+                upper_bound=variable_upper_bound
+            )
+            upper_bound._process_variable_bound(
+                variable, 'upper',
+                lower_bound=variable_lower_bound,
+                upper_bound=variable_upper_bound
+            )
+
+        return lower_bound, upper_bound
+
+    def _process_variable_bound(
+            self, variable, output_bound_type,
+            lower_bound=None, upper_bound=None
+    ):
+        """Modifies <self> so that <self> after the algorithm is the upper or
+        lower bound of <self> before the algorithm, based on the bounds of
+        <variable>"""
+
+        # <lower_bound>, <upper_bound> - lower and upper bounds of <variable>
+
+        # <output_bound_type> - should be "lower" or "upper" - a string that
+        # specifies whether the modified <self> should be the lower or upper
+        # bound of the original <self>
+
+        try:
+            multiplier = self[variable]
+        except KeyError:
+            return
+
+        if output_bound_type not in ('lower', 'upper'):
+            raise ValueError(
+                f"invalid 'output_bound_type' argument: {output_bound_type}")
+
+        # we will substitute one of the formulas <lower_bound>, <upper_bound>
+        # for <variable> to get the desired outcome
+
+        # for example <self> is 'a + b' and the upper bound of 'b' is 5, then
+        # we will get the upper bound of the formula by substituting 'b' for
+        # 5, but if the formula is 'a - b', then the aforementioned
+        # operation will give us the lower bound
+
+        if multiplier > 0:
+            if output_bound_type == 'lower':
+                bound = lower_bound
+            elif output_bound_type == 'upper':
+                bound = upper_bound
+
+        else:
+            if output_bound_type == 'lower':
+                bound = upper_bound
+            elif output_bound_type == 'upper':
+                bound = lower_bound
+
+        if bound is not None:
+            self.substitute(**{variable: bound}, inplace=True)
+            self.zip(inplace=True)
 
     #-------------------------------------------------------------------------
 
