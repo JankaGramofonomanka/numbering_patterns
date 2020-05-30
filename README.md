@@ -48,8 +48,6 @@ from numbering_patterns import LinearFormula
 ```
 >>> LinearFormula('a + 3b - 4c')
 a + 3b - 4c
-(Currently the string-to-formula conversion algorithm supports only 
-integer multipliers)
 
 >>> LinearFormula({'a': 1, 'b': 3, 'c': -4'})
 a + 3b - 4c
@@ -94,7 +92,7 @@ d + 3d - 4c
 #### Simplify:
 ```
 >>> formula_1 = LinearFormula('a + 3b - 4c + 3a - b')
->>> formula_.zip()
+>>> formula_1.zip()
 4a + 2b - 4c
 ```
 #### Find modulo equivalent:
@@ -192,6 +190,19 @@ consists of lower and upper bounds of the original formula.
 >>> formula.get_bounds(lower_bounds, upper_bounds, recursive=True)
 (c, f)
 ```
+You can also pass an ```order``` argument that specifies in what order 
+to substitute the variables to get the bounds.
+```
+>>> lower_bounds = {'a': 'b', 'b': 'c'}
+>>> formula = LinearFormula('a + b')
+>>> lb, ub = formula.get_bounds(lower_bounds, {}, order=['a', 'b'])
+>>> lb
+2c
+
+>>> lb, ub = formula.get_bounds(lower_bounds, {}, order=['b', 'a'])
+>>> lb
+b + c
+```
 ### 5. Simple utilities
 ```
 >>> LinearFormula('a + 3b - 4c').length()
@@ -225,8 +236,8 @@ a > b
 >>> LinearRelation('a <= b')
 a <= b
 
->>> formula_1 = LinearForula('a')
->>> formula_2 = LinearForula('b')
+>>> formula_1 = LinearFormula('a')
+>>> formula_2 = LinearFormula('b')
 >>> LinearRelation(formula_1, formula_2, relation='<')
 a < b
 
@@ -296,8 +307,12 @@ a == 3b
 
 >>> relation_1
 a == 3b
+
+>>> relation_1.substitute(a=2x, inplace=True)
+>>> relation_1
+2x == 3b
 ```
-### 3. Operations on formulas
+### 3. Operations on relations
 ```
 >>> relation_1 = LinearRelation('a == 3b')
 >>> relation_2 = LinearRelation('4c == d')
@@ -348,7 +363,7 @@ a - 2c <= 3b - 2c
 ### 4. Other math stuff
 #### Evaluation:
 ```
->>> LinearRelation('a == 3b').evaluate(a=2, b=1})
+>>> LinearRelation('a == 3b').evaluate(a=2, b=1)
 2 == 3
 ```
 #### Epistemological status:
